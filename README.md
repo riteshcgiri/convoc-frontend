@@ -18,10 +18,14 @@ Part of the full-stack **CONVOC MERN Chat Platform**.
 
 ## 📁 Project Structure
 
-src/ │ ├── components/ \# Reusable UI components ├── pages/ \#
-Application pages (Login, Register, Chat, etc.) ├── store/ \# Zustand
-stores (Auth Store) ├── lib/ \# Axios instance & helpers ├── assets/ \#
-Static assets └── App.jsx
+src/ 
+│ 
+├── components/ \# Reusable UI components 
+├── pages/ \# Application pages (Login, Register, Chat, etc.) 
+├── store/ \# Zustand stores (Auth Store) 
+├── lib/ \# Axios instance & helpers 
+├── assets/ \# Static assets 
+└── App.jsx
 
 ------------------------------------------------------------------------
 
