@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Sansation:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #6A67C2;
+  --color-secondary: #5877AD;
+  --color-accent: #06B6D4;
+  --color-background: #ffffff;
+  --color-surface: #1E293B;
+  --color-muted: #94A3B8;
+
+  --font-sansation : "Sansation", sans-serif;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield; /* Standard property for newer browsers */
+}
+
+
