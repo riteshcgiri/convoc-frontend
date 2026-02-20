@@ -141,7 +141,6 @@ const useAuthStore = create((set, get) => ({
         }
     },
 
-
     verifyResetOtp: async (otp, navigate) => {
         try {
             set({ loading: true, error: null });
@@ -165,7 +164,7 @@ const useAuthStore = create((set, get) => ({
             const res = await api.post(`${API_URL}/reset-password`, { email: otpEmail, password, });
             localStorage.setItem("token", res.data.token);
             set({ user: res.data, token: res.data.token, isAuth: true, loading: false, otpEmail: null, });
-            set({ user: res.data, token: res.data.token, isAuth: true, loading: false, otpEmail: null, resetSessionActive: false,});
+            set({ user: res.data, token: res.data.token, isAuth: true, loading: false, otpEmail: null, resetSessionActive: false, });
             useNotificationStore.getState().addNotification("success", "Password changed successfully");
             navigate("/chat");
 
@@ -175,6 +174,21 @@ const useAuthStore = create((set, get) => ({
             useNotificationStore.getState().addNotification("error", message);
         }
     },
+
+    checkAuth: async () => {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+            set({ loading: true });
+            const res = await api.get(`${API_URL}/me`);
+            set({ user: res.data, token, isAuth: true, loading: false, });
+        } catch (error) {
+            localStorage.removeItem("token");
+            set({ user: null, token: null, isAuth: false, loading: false,});
+            useNotificationStore().getState().addNotification('error',error)
+        }
+    },
+
 
 
 
