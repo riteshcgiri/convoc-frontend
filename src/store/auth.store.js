@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import api from "../services/api";
 import useNotificationStore from "./notification.store";
+import getRandomAvatar from "../utils/getRandomAvatar";
+
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/auth`;
 
@@ -20,8 +22,9 @@ const useAuthStore = create((set, get) => ({
     signup: async (data, navigate) => {
         try {
             set({ loading: true, error: null });
+            const avatar = await getRandomAvatar();
 
-            const res = await api.post(`${API_URL}/signup`, data);
+            const res = await api.post(`${API_URL}/signup`, {...data, avatar : avatar});
 
             set({
                 loading: false,
@@ -54,6 +57,7 @@ const useAuthStore = create((set, get) => ({
                 token: res.data.token,
                 isAuth: true,
                 loading: false,
+                avatar : ''
             });
 
             useNotificationStore.getState().addNotification("success", `Logged In successfully `);

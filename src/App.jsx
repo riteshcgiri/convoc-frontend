@@ -16,6 +16,7 @@ import useNotificationStore from './store/notification.store'
 import Chat from './pages/chat/Chat'
 import { connectSocket } from './services/socket'
 import useSocket from './hooks/useSocket'
+import useSocketEvents from './hooks/useSocketEvents'
 
 
 const App = () => {
@@ -23,7 +24,11 @@ const App = () => {
   const {isAuth, checkAuth, user} = useAuthStore()
   const {addNotification} = useNotificationStore()
   const navigate = useNavigate()
+  
+  useSocket();
+  useSocketEvents();
 
+  
   useEffect(() => {
     checkAuth();
   }, []);
@@ -34,7 +39,6 @@ const App = () => {
       connectSocket(user._id);
     }
   }, [user]);
-  useSocket();
 
   return (
 

@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import ChatSharePopup from "../popups/ChatSharePopup";
 import useChatStore from "../../store/chat.store";
 import { getSocket } from "../../services/socket";
+import useClickOutside from "../../hooks/useClickOutside";
 
 
 
@@ -23,6 +24,9 @@ const MessageInput = () => {
   const isTypingRef = useRef(false);
   const popupRef = useRef();
   const typingTimeoutRef = useRef(null);
+
+  
+  useClickOutside(popupRef, () => setShowPopup(false))
 
   const handleTyping = () => {
     const socket = getSocket();
@@ -144,6 +148,12 @@ const MessageInput = () => {
       });
     }
   }, [showEmoji]);
+
+  useEffect(() => {
+    if(!selectedChat)
+       return;
+    inputRef.current.focus()
+  }, [selectedChat])
 
   return (
     <div className="h-16 border-t border-zinc-300 relative  px-6 flex gap-3 items-center ">

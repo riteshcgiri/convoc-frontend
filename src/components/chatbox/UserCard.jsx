@@ -3,10 +3,17 @@ import { useState, useEffect, useRef } from "react";
 import { AnimatePresence } from "framer-motion";
 import ChatMenuPopup from "../popups/ChatMenuPopup";
 import useClickOutside from "../../hooks/useClickOutside";
+import useChatStore from "../../store/chat.store";
+import Portal from "../../hooks/usePortal";
 
-const UserCard = ({ username, name, lastMsg, lastMsgTime, src, isActive, isMuted, unread, unreadCount, onClick }) => {
+
+const UserCard = ({ username, name, lastMsg, lastMsgTime, src, isActive, isMuted, unread, unreadCount, onClick, chatId }) => {
   const [showPopup, setShowPopup] = useState(false);
+  const [popupPos, setPopupPos] = useState({ x: 0, y: 0 });
   const popupRef = useRef(null);
+  const cardRef = useRef(null);
+  const typingChats = useChatStore((state) => state.typingChats)
+  const isTyping = typingChats[chatId]
 
   const menuOptions = [
     {
@@ -42,19 +49,30 @@ const UserCard = ({ username, name, lastMsg, lastMsgTime, src, isActive, isMuted
 
 
   ]
-  const handleShowPopup = (e) => (e.preventDefault(),setShowPopup((prev) => !prev));
+  const handleShowPopup = (e) => {
+    e.preventDefault();
+    const rect = cardRef.current.getBoundingClientRect();
+    setPopupPos({ x: rect.right + 10, y: rect.top, });
+    setShowPopup((prev) => !prev)
+
+  };
   useClickOutside(popupRef, () => setShowPopup(false))
 
 
   return (
     <div className="relative" onContextMenu={handleShowPopup}  >
-      <div className="w-full flex px-5 py-3 gap-3 items-center border border-zinc-100 hover:bg-primary/10 group select-none relative" onClick={onClick}>
+      <div ref={cardRef} className="w-full flex px-5 py-3 gap-3 items-center border border-zinc-100 hover:bg-primary/10 group select-none relative" onClick={onClick}>
         <div className={`w-14 h-14 rounded-full ${isActive && 'outline-2 outline-green-500'} relative`}>
-          <img src={src} alt={username} className="w-full h-full object-cover rounded-full" draggable={false} />
+          {!!src ?
+            <img src={src} alt={username} className="w-full h-full object-cover rounded-full" draggable={false} />
+            : <div className="w-full h-full flex items-center justify-center bg-blue-300/20 text-blue-700 rounded-full overflow-hidden">
+              <User strokeWidth={1.2} className="w-12 h-12  p-2 rounded-full" />
+            </div>
+          }
         </div>
         <div className=" flex-1">
           <h2 className="text-primary text-md">{name}</h2>
-          <h3 className="text-xs font-normal text-zinc-400">{lastMsg}</h3>
+          {isTyping ? <h2 className="text-green-500 text-xs font-normal ">Typing...</h2> : <h3 className={`text-xs font-normal ${unread ? 'text-green-500' : 'text-zinc-400'}`}> {lastMsg}</h3>}
         </div>
         <div className="flex items-end flex-col gap-3 relative">
           <ChevronDown onClick={() => setShowPopup(prev => !prev)} className="w-7 h-7 invisible transition-all group-hover:visible hover:bg-primary/20 rounded-sm text-primary cursor-pointer p-1" />
@@ -66,9 +84,15 @@ const UserCard = ({ username, name, lastMsg, lastMsgTime, src, isActive, isMuted
           </div>
         </div>
       </div>
-        <AnimatePresence>
-          {showPopup && (<div ref={popupRef}> <ChatMenuPopup options={menuOptions} className={'left-full top-0'} /> </div>)}
-        </AnimatePresence>
+      <AnimatePresence>
+        {showPopup && (
+          <Portal children={
+            <div ref={popupRef} style={{ position: "fixed", top: popupPos.y, left: popupPos.x, zIndex: 9999, }} >
+              <ChatMenuPopup options={menuOptions} className={'left-full top-0 z-[100]'} />
+            </div>} />
+
+        )}
+      </AnimatePresence>
     </div>
   );
 };

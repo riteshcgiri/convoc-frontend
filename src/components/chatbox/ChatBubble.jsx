@@ -6,7 +6,9 @@ import { formatTime } from "../../utils/formatTime";
 
 const ChatBubble = ({ user, message }) => {
   const [showPopup, setShowPopup] = useState(false);
-  const popupRef = useRef();
+  const [popupPos, setPopupPos] = useState({x: 0, y : 0});
+  const popupRef = useRef(null);
+  const cardRef = useRef(null);
   useClickOutside(popupRef, () => setShowPopup(false));
 
   const isDelivered = message?.deliveredTo?.some(
@@ -19,17 +21,29 @@ const ChatBubble = ({ user, message }) => {
 
   const bubbleOptions = [
     { title: "Message Info", icon: <Info className="w-5 h-5" /> },
-    { title: "Copy", icon: <Copy className="w-5 h-5" />, fnc: () => navigator.clipboard.writeText(message?.content || "") },
+    { title: "Copy", icon: <Copy className="w-5 h-5" />, fnc: () => {navigator.clipboard.writeText(message?.content || ""); setShowPopup(false)} },
     { title: "Reply", icon: <Reply className="w-5 h-5" /> },
     { title: "Delete", icon: <Trash2 className="w-5 h-5" /> },
   ];
 
+  const handlePopup = (e) => {
+    e.preventDefault(); 
+    setShowPopup(!showPopup); 
+    const rect = cardRef.current.getBoundingClientRect();
+    setPopupPos({ x: rect.right + 10, y: rect.top, });
+    if(message?.sender?._id === user?._id){
+      setPopupPos({x : rect.left - (rect.width + 80), y : rect.top})
+    }
+    else {
+      setPopupPos({x : rect.right + 7, y : rect.top})
+      
+    }
+  }
+
   return (
     <div className={`w-full flex ${message?.sender?._id === user?._id ? "justify-end" : "justify-start"} items-center relative`}>
-      <div
-        className={`${message?.sender?._id === user?._id ? "text-end bg-primary" : "bg-secondary"} text-white w-fit max-w-[60%] relative rounded-lg`}
-        onContextMenu={(e) => { e.preventDefault(); setShowPopup(!showPopup); }}
-      >
+      <div ref={cardRef} className={`${message?.sender?._id === user?._id ? "text-end bg-primary" : "bg-secondary"} text-white w-fit max-w-[60%] relative rounded-lg`}
+        onContextMenu={(e) => handlePopup(e)}>
         <h1 className={`${message?.sender?._id === user?._id ? 'bg-secondary/50 pe-3' : 'bg-primary/50 ps-3'} py-0.5 rounded-lg text-[10px]`}>
           {message?.sender?.name}
         </h1>
@@ -52,7 +66,7 @@ const ChatBubble = ({ user, message }) => {
       </div>
 
       {showPopup && (
-        <div ref={popupRef}>
+        <div ref={popupRef} style={{ position: "fixed", top: popupPos.y, left: popupPos.x, zIndex: 9999, }}>
           <ChatMenuPopup
             className={`${message?.sender?._id === user?._id ? "right-60" : ""}`}
             options={bubbleOptions}

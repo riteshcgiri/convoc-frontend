@@ -2,19 +2,15 @@ import { io } from "socket.io-client";
 
 let socket = null;
 let currentUserId = null;
+let onReadyCallbacks = [];
 
 export const connectSocket = (userId) => {
-  // Already connected for this user — do nothing
-  if (socket?.connected && currentUserId === userId) {
-    return socket;
-  }
+  if (socket?.connected && currentUserId === userId) return socket;
 
-  // Clean up existing socket
   if (socket) {
     socket.removeAllListeners();
     socket.disconnect();
     socket = null;
-    currentUserId = null;
   }
 
   currentUserId = userId;
@@ -24,24 +20,29 @@ export const connectSocket = (userId) => {
     reconnection: true,
     reconnectionAttempts: Infinity,
     reconnectionDelay: 1000,
-    reconnectionDelayMax: 5000,
   });
 
   socket.on("connect", () => {
-    console.log("Socket connected:", socket.id);
+    console.log("✅ Socket connected:", socket.id);
     socket.emit("setup", userId);
-  });
-
-  socket.on("reconnect", () => {
-    console.log("Socket reconnected:", socket.id);
-    socket.emit("setup", userId);
+    socket.emit("get_online_users", userId);
+    onReadyCallbacks.forEach((cb) => cb(socket));
+    onReadyCallbacks = [];
   });
 
   socket.on("disconnect", (reason) => {
-    console.log("Socket disconnected:", reason);
+    console.log("❌ Socket disconnected:", reason);
   });
 
   return socket;
+};
+
+export const onSocketReady = (cb) => {
+  if (socket?.connected) {
+    cb(socket);
+    return;
+  }
+  onReadyCallbacks.push(cb);
 };
 
 export const getSocket = () => socket;
@@ -52,5 +53,6 @@ export const disconnectSocket = () => {
     socket.disconnect();
     socket = null;
     currentUserId = null;
+    onReadyCallbacks = [];
   }
 };

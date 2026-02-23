@@ -3,74 +3,21 @@ import MessageHeader from "./MessageHeader";
 import MessageInput from "./MessageInput";
 import MessagesArea from "./MessagesArea";
 import useChatStore from "../../store/chat.store";
-import { getSocket } from "../../services/socket";
-import { useEffect, useState, useRef } from 'react';
-import useAuthStore from '../../store/auth.store';
+import { useEffect } from 'react';
+
 
 const ChatContainer = () => {
-  const { selectedChat, addMessage, updateMessageStatus } = useChatStore();
-  const { user } = useAuthStore();
-  const [isTyping, setIsTyping] = useState(false);
+  const selectedChat = useChatStore((state) => state.selectedChat);
 
   useEffect(() => {
-    const socket = getSocket();
-    if (!socket) return;
-
-    const attachListeners = () => {
-      // Remove old listeners first to avoid duplicates
-      socket.off("new_message");
-      socket.off("message_status_updated");
-      socket.off("typing");
-      socket.off("stop_typing");
-
-      socket.on("typing", (chatId) => {
-        const { selectedChat } = useChatStore.getState();
-        if (selectedChat?._id === chatId) setIsTyping(true);
-      });
-
-      socket.on("stop_typing", (chatId) => {
-        const { selectedChat } = useChatStore.getState();
-        if (selectedChat?._id === chatId) setIsTyping(false);
-      });
-
-      socket.on("new_message", (message) => {
-        const currentUserId = useAuthStore.getState().user._id;
-        const selected = useChatStore.getState().selectedChat;
-
-        if (!selected) return;
-
-        const chatId = typeof message.chat === "object"
-          ? message.chat._id
-          : message.chat;
-
-        if (chatId !== selected._id) return;
-
-        if (message.sender._id !== currentUserId) {
-          addMessage(message);
-          socket.emit("message_delivered", { chatId, userId: currentUserId });
-          socket.emit("message_read", { chatId, userId: currentUserId });
-        }
-      });
-
-      socket.on("message_status_updated", ({ userId, type, chatId }) => {
-        console.log("message_status_updated received", { userId, type, chatId });
-        updateMessageStatus(userId, type);
-      });
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        useChatStore.getState().clearChat();
+      }
     };
 
-    // Attach now
-    attachListeners();
-
-    // Re-attach on every reconnect
-    socket.on("connect", attachListeners);
-
-    return () => {
-      socket.off("connect", attachListeners);
-      socket.off("new_message");
-      socket.off("message_status_updated");
-      socket.off("typing");
-      socket.off("stop_typing");
-    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   if (!selectedChat) {
@@ -88,7 +35,7 @@ const ChatContainer = () => {
   return (
     <div className="flex-1 overflow-hidden">
       <div className="flex flex-col h-full">
-        <MessageHeader isTyping={isTyping} />
+        <MessageHeader />
         <div className='w-full h-full flex-1 overflow-y-auto'>
           <MessagesArea />
         </div>
