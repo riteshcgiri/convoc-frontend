@@ -49,7 +49,7 @@ const Sidebar = () => {
             } finally {
                 setSearching(false);
             }
-        }, 400);
+        }, 2000);
     }, [searchQuery]);
 
     // Filter chats locally
@@ -111,7 +111,7 @@ const Sidebar = () => {
                 {searchMode && !searching && (
                     <div className="h-full overflow-y-auto">
                         {/* User Results */}
-                        {userResults.length > 0 && (
+                        {userResults?.length > 0 && (
                             <div>
                                 <h3 className="text-xs text-zinc-400 font-semibold px-5 py-2 uppercase tracking-wider">Users</h3>
                                 {userResults.map((u) => (
@@ -152,7 +152,7 @@ const Sidebar = () => {
                         )}
 
                         {/* No results */}
-                        {userResults.length === 0 && messageResults.length === 0 && (
+                        {userResults?.length === 0 && messageResults?.length === 0 && (
                             <div className="text-center py-8 text-zinc-400 text-sm"> No results for "{searchQuery}"</div>
                         )}
                     </div>
@@ -161,7 +161,7 @@ const Sidebar = () => {
                 {/* Normal Chat List */}
                 {!searchMode && (
                     <div className='h-full overflow-y-auto'>
-                        {filteredChats.length === 0 ? (
+                        {filteredChats?.length === 0 ? (
                             <div className="flex items-center flex-col text-center py-8 text-zinc-400">
                                 <Telescope className="h-14 w-14 text-primary" strokeWidth={1.2} />
                                 <div className="w-full flex items-center justify-center flex-col gap-3">
@@ -170,7 +170,7 @@ const Sidebar = () => {
                                 </div>
                             </div>
                         ) : (
-                            filteredChats.map((chat) => {
+                            filteredChats?.map((chat) => {
                                 const formatted = transformerChat(chat, user, onlineUsers);
                                 return ( <UserCard key={chat._id} {...formatted} onClick={() => selectChat(chat)}/>);
                             })

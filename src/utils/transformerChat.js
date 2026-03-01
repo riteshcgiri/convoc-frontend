@@ -21,6 +21,7 @@ export const transformerChat = (chat, currentUser, onlineUsers = {}) => {
     isMuted: mySetting?.muted || false,
     unread: (chat.unreadCount || 0) > 0,
     unreadCount: chat.unreadCount || 0,
-    about: otherUser?.about || "",
+    about: chat.isGroupChat ? (chat.groupAbout || "") : (otherUser?.about || ""),
+    createdAt : new Date(chat?.createdAt)?.toLocaleDateString('en-IN',  {month: "short", day: "2-digit", year: "numeric",}),
   };
 };

@@ -23,7 +23,7 @@ export const connectSocket = (userId) => {
   });
 
   socket.on("connect", () => {
-    console.log("✅ Socket connected:", socket.id);
+   
     socket.emit("setup", userId);
     socket.emit("get_online_users", userId);
     onReadyCallbacks.forEach((cb) => cb(socket));

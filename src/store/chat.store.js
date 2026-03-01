@@ -2,6 +2,7 @@ import { create } from "zustand";
 import api from "../services/api";
 import useAuthStore from "./auth.store";
 import { getSocket } from "../services/socket";
+import useNotificationStore from "./notification.store";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -11,6 +12,7 @@ const useChatStore = create((set, get) => ({
   selectedChat: null,
   typingChats: {},
   onlineUsers: {},
+  loading: false,
 
   fetchChats: async () => {
     const res = await api.get(`${API_URL}/chat`);
@@ -133,8 +135,13 @@ const useChatStore = create((set, get) => ({
   // Search users
   searchUsers: async (q) => {
     if (!q?.trim()) return [];
+    if (q.length <= 2) {
+      useNotificationStore.getState().addNotification('info', 'Enter more than 2 characters')
+      return [];
+    }
     const res = await api.get(`${API_URL}/auth/search?q=${q}`);
     return res.data;
+
   },
 
   // Search messages
@@ -156,6 +163,103 @@ const useChatStore = create((set, get) => ({
     return newChat;
   },
 
+  addChat: (chat) => {
+    set((state) => {
+      const exists = state.chats.find((c) => c._id === chat._id);
+      if (exists) return state;
+      return { chats: [chat, ...state.chats] };
+    });
+  },
+
+  removeChat: (chatId) => {
+    set((state) => ({
+      chats: state.chats.filter((c) => c._id !== chatId),
+      selectedChat: state.selectedChat?._id === chatId ? null : state.selectedChat,
+      messages: state.selectedChat?._id === chatId ? [] : state.messages,
+    }));
+  },
+
+  deleteChatForUser: async (chatId) => {
+    try {
+      if (!chatId) {
+        useNotificationStore.getState().addNotification('error', 'Please Select a chat to delete')
+        return;
+      }
+      await api.patch(`${API_URL}/chat/${chatId}/delete`);
+      set((state) => ({
+        chats: state.chats.filter((c) => c._id !== chatId),
+        selectedChat: null,
+        messages: [],
+      }));
+      useNotificationStore.getState().addNotification('success', 'Chat Deleted')
+      
+    } catch (error) {
+      useNotificationStore.getState().addNotification('error', error || 'Please Select a chat to delete')
+      throw new Error("chat Delete Err : ",error || 'Failed to delete chat')
+
+
+    }
+
+
+  },
+
+  updateChat: (updatedChat) => {
+    set((state) => ({
+      chats: state.chats.map((c) => c._id === updatedChat._id ? { ...c, ...updatedChat } : c),
+      selectedChat: state.selectedChat?._id === updatedChat._id ? { ...state.selectedChat, ...updatedChat } : state.selectedChat,
+    }));
+  },
+
+  createGroup: async (data) => {
+    try {
+      set({ loading: true })
+      if (!data)
+        return
+      const res = await api.post(`${API_URL}/chat/group`, data);
+      const newGroup = res.data;
+      set((state) => ({ chats: [newGroup, ...state.chats] }));
+      set({ loading: false })
+      return newGroup;
+
+    } catch (error) {
+      set({ loading: false })
+      console.log("Create Group err : ", error)
+      useNotificationStore().getState().addNotification('error', error || 'Failed to create Group')
+    } finally {
+      set({ loading: false })
+
+    }
+
+  },
+
+  addGroupMembers: async (chatId, users) => {
+    const res = await api.post(`${API_URL}/chat/${chatId}/members`, { users });
+    useChatStore.getState().updateChat(res.data);
+    return res.data;
+  },
+
+  removeGroupMember: async (chatId, userId) => {
+    const res = await api.delete(`${API_URL}/chat/${chatId}/members/${userId}`);
+    useChatStore.getState().updateChat(res.data);
+    return res.data;
+  },
+
+  leaveGroup: async (chatId) => {
+    await api.delete(`${API_URL}/chat/${chatId}/leave`);
+    useChatStore.getState().removeChat(chatId);
+  },
+
+  makeAdmin: async (chatId, userId) => {
+    const res = await api.patch(`${API_URL}/chat/${chatId}/admin/${userId}`);
+    useChatStore.getState().updateChat(res.data);
+    return res.data;
+  },
+
+  updateGroupInfo: async (chatId, data) => {
+    const res = await api.put(`${API_URL}/chat/${chatId}`, data);
+    useChatStore.getState().updateChat(res.data);
+    return res.data;
+  },
 
 
   clearChat: () => set({ selectedChat: null, messages: [] }),

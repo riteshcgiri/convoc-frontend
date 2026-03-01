@@ -6,7 +6,7 @@ const CustomCheckbox = ({ label, name, register, error }) => {
                 <div className="w-6 h-6 border-2 border-primary rounded-md flex items-center justify-center transition peer-checked:bg-primary peer-checked:border-primary">
                     <div className="w-3 h-3 bg-white rounded-sm scale-0 peer-checked:scale-100 transition-transform duration-150"></div>
                 </div>
-                <span className="text-sm"> {label}</span>
+                {label && <span className="text-sm"> {label}</span>}
             </label>
 
             

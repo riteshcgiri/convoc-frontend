@@ -7,13 +7,16 @@ import api from "../services/api";
 const useSocketEvents = () => {
   useEffect(() => {
     const attachListeners = (socket) => {
-      socket.off("new_message");
-      socket.off("message_status_updated");
       socket.off("typing");
       socket.off("stop_typing");
+      socket.off("new_message");
+      socket.off("message_status_updated");
       socket.off("user_online");
       socket.off("user_offline");
       socket.off("online_users_list");
+      socket.off("added_to_group");
+      socket.off("removed_from_group");
+      socket.off("group_updated");
 
       socket.on("typing", (chatId) => {
         useChatStore.getState().setTyping(chatId, true);
@@ -23,48 +26,20 @@ const useSocketEvents = () => {
         useChatStore.getState().setTyping(chatId, false);
       });
 
-      // socket.on("new_message", (message) => {
-      //   const currentUserId = useAuthStore.getState().user._id;
-      //   const { selectedChat, addMessage } = useChatStore.getState();
-
-      //   const chatId = typeof message.chat === "object"
-      //     ? message.chat._id
-      //     : message.chat;
-
-      //   // Always add message (addMessage handles selected chat check internally)
-      //   if (message.sender._id !== currentUserId) {
-      //     addMessage(message);
-
-      //     socket.emit("message_delivered", { chatId, userId: currentUserId });
-
-      //     // Only mark as read if this chat is currently open
-      //     if (selectedChat?._id === chatId) {
-      //       socket.emit("message_read", { chatId, userId: currentUserId });
-      //     }
-      //   }
-      // });
-
       socket.on("new_message", async (message) => {
         const currentUserId = useAuthStore.getState().user._id;
         const { selectedChat, addMessage, chats } = useChatStore.getState();
 
-        const chatId = typeof message.chat === "object"
-          ? message.chat._id
-          : message.chat;
-
-        console.log("📨 new_message received", { chatId, sender: message.sender._id });
-        console.log("📋 chats in store:", chats.map(c => c._id));
-
+        const chatId = typeof message.chat === "object" ? message.chat._id : message.chat;
         if (message.sender._id === currentUserId) return;
 
         const chatExists = chats.find((c) => c._id === chatId);
-        console.log("🔍 chatExists:", !!chatExists);
+        
 
         if (!chatExists) {
-          console.log("🆕 New chat detected, refetching chats...");
+          
           try {
             const res = await api.get(`${import.meta.env.VITE_API_BASE_URL}/chat`);
-            console.log("✅ fetched chats:", res.data.length);
             useChatStore.setState({ chats: res.data });
           } catch (err) {
             console.error("❌ Failed to fetch new chat:", err);
@@ -72,8 +47,6 @@ const useSocketEvents = () => {
         }
 
         addMessage(message);
-        console.log("➕ addMessage called");
-
         if (selectedChat?._id === chatId) {
           socket.emit("message_delivered", { chatId, userId: currentUserId });
           socket.emit("message_read", { chatId, userId: currentUserId });
@@ -95,10 +68,20 @@ const useSocketEvents = () => {
       });
 
       socket.on("online_users_list", (userIds) => {
-        console.log("🟢 online users:", userIds);
         userIds.forEach((userId) => {
           useChatStore.getState().setOnlineUser(userId, true);
         });
+      });
+      socket.on("added_to_group", (chat) => {
+        useChatStore.getState().addChat(chat);
+      });
+
+      socket.on("removed_from_group", ({ chatId }) => {
+        useChatStore.getState().removeChat(chatId);
+      });
+
+      socket.on("group_updated", (chat) => {
+        useChatStore.getState().updateChat(chat);
       });
 
       // Re-join current chat room after reconnect

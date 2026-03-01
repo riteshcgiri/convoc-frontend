@@ -6,8 +6,9 @@ import useClickOutside from '../../hooks/useClickOutside';
 import useAuthStore from '../../store/auth.store';
 import useChatStore from '../../store/chat.store';
 import { transformerChat } from '../../utils/transformerChat'
+import VideoAudio from './VideoAudio';
 
-const MessageHeader = () => {
+const MessageHeader = ({onProfileClick}) => {
     const { selectedChat } = useChatStore();
     const typingChats = useChatStore((state) => state.typingChats)
     const onlineUsers = useChatStore((state) => state.onlineUsers);
@@ -87,7 +88,7 @@ const MessageHeader = () => {
     useClickOutside(popupRef, () => setShowPopup(false))
     return (
         <motion.div className="w-full bg-white px-5 py-3 flex items-center gap-5 select-none">
-            <div className={`w-12 h-12 rounded-full ${chatUI.isActive && 'outline-2 outline-green-500'} relative`}>
+            <div className={`w-12 h-12 rounded-full ${chatUI.isActive && 'outline-2 outline-green-500'} relative cursor-pointer`} onClick={onProfileClick}>
                 {!!chatUI.src ?
                     <img src={chatUI.src} alt={chatUI.username} className="w-full h-full object-cover rounded-full" draggable={false} />
                     : <div className="w-full h-full flex items-center justify-center bg-blue-300/20 text-blue-700 rounded-full overflow-hidden">
@@ -95,37 +96,15 @@ const MessageHeader = () => {
                     </div>
                 }
             </div>
-            <div className=" leading-tight flex-1">
+            <div className=" leading-tight flex-1 cursor-pointer" onClick={onProfileClick}>
                 <h2 className="text-md text-primary font-bold">{chatUI.name}</h2>
                 <div className="text-xs text-zinc-400 flex items-center">
                     {isTyping ? 'Typing...' : <h3 className={`${chatUI.isActive ? 'text-green-500' : 'text-zinc-500'}`} >{chatUI.isActive ? 'Online' : 'Offline'}</h3>}
                     <Dot className='w-5 h-5' />
-                    {<span>{chatUI?.about || 'Sample About'}</span>}
+                    {<span>{String(chatUI?.about).slice(0,20) || 'Sample About'}</span>}
                 </div>
             </div>
-            <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className=" flex items-center rounded-full bg-gradient-to-r from-primary to-secondary shadow-lg shadow-primary/30 backdrop-blur-md border border-white/20 overflow-hidden">
-                {/* Phone Button */}
-                <motion.div
-                    whileHover={{ scale: 1.08 }}
-                    whileTap={{ scale: 0.92 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                    className=" px-6 py-3 cursor-pointer flex items-center justify-center border-r border-white/20 hover:bg-white/10 transition-colors duration-300">
-                    <Phone className="w-5 h-5 text-white" />
-                </motion.div>
-
-                {/* Video Button */}
-                <motion.div
-                    whileHover={{ scale: 1.08 }}
-                    whileTap={{ scale: 0.92 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                    className=" px-6 py-3 cursor-pointer flex items-center justify-center hover:bg-white/10 transition-colors duration-300">
-                    <Video className="w-5 h-5 text-white" />
-                </motion.div>
-            </motion.div>
+            <VideoAudio />
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className='flex items-center gap-3 text-primary'>
                 <motion.div whileHover={{ scale: 1.12 }} whileTap={{ scale: 0.9 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className='rounded-full cursor-pointer p-3 transition-all duration-300 hover:bg-primary/20'>
                     <Search className='w-5  h-5 ' />

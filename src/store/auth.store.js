@@ -48,24 +48,27 @@ const useAuthStore = create((set, get) => ({
         try {
             set({ loading: true, error: null });
 
-            const res = await api.post(`${API_URL}/signin`, data);
+            const loginRes = await api.post(`${API_URL}/signin`, data);
 
-            localStorage.setItem("token", res.data.token);
+            localStorage.setItem("token", loginRes.data.token);
 
+            
             set({
-                user: res.data,
-                token: res.data.token,
+                user: loginRes.data,
+                token: loginRes.data.token,
                 isAuth: true,
                 loading: false,
-                avatar : ''
             });
+            const userRes = await api.get(`${API_URL}/me`)
+            set({ user: { ...loginRes.data, ...userRes.data } });
+
 
             useNotificationStore.getState().addNotification("success", `Logged In successfully `);
             navigate("/chat");
 
         } catch (err) {
-            set({ loading: false, error: err.response?.data?.message || "Sign In Failed!!", });
-            useNotificationStore.getState().addNotification("error", err.response?.data?.message || `Logged In Failed `);
+            set({ loading: false, error: err.response?.data?.message || "Login Failed!!", });
+            useNotificationStore.getState().addNotification("error", err.response?.data?.message || `LogIn Failed `);
         }
     },
 
@@ -179,7 +182,7 @@ const useAuthStore = create((set, get) => ({
         }
     },
 
-    checkAuth: async () => {
+    checkAuth: async (navigate) => {
         try {
             const token = localStorage.getItem("token");
             if (!token) return;
@@ -189,6 +192,7 @@ const useAuthStore = create((set, get) => ({
         } catch (error) {
             localStorage.removeItem("token");
             set({ user: null, token: null, isAuth: false, loading: false,});
+            navigate('/signin')
             useNotificationStore().getState().addNotification('error',error)
         }
     },

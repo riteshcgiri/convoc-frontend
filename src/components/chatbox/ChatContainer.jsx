@@ -3,11 +3,14 @@ import MessageHeader from "./MessageHeader";
 import MessageInput from "./MessageInput";
 import MessagesArea from "./MessagesArea";
 import useChatStore from "../../store/chat.store";
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import ChatProfile from './ChatProfile';
+
 
 
 const ChatContainer = () => {
   const selectedChat = useChatStore((state) => state.selectedChat);
+  const [showUserProfile, setShowUserProfile] = useState(false)
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -33,9 +36,9 @@ const ChatContainer = () => {
   }
 
   return (
-    <div className="flex-1 overflow-hidden">
-      <div className="flex flex-col h-full">
-        <MessageHeader />
+    <div className="flex-1 flex overflow-hidden h-full">
+      <div className=" flex-1 flex flex-col h-full">
+        <MessageHeader onProfileClick={() => setShowUserProfile(!showUserProfile)} />
         <div className='w-full h-full flex-1 overflow-y-auto'>
           <MessagesArea />
         </div>
@@ -43,6 +46,7 @@ const ChatContainer = () => {
           <MessageInput />
         </div>
       </div>
+      {showUserProfile && <ChatProfile onProfileClick={() => setShowUserProfile(!showUserProfile)} />}
     </div>
   );
 };

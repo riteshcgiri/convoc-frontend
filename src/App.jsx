@@ -30,7 +30,7 @@ const App = () => {
 
   
   useEffect(() => {
-    checkAuth();
+    checkAuth(navigate);
   }, []);
   
   
@@ -54,7 +54,7 @@ const App = () => {
             <Route path='/reset-password' element={<ResetGuard><ResetPassword /></ResetGuard>} />
 
 
-            <Route path='/chat' element={<Chat />} />
+            <Route path='/chat/*' element={<Chat />} />
           </Routes>
 
       </div>

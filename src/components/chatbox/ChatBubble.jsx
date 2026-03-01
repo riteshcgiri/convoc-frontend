@@ -57,8 +57,8 @@ const ChatBubble = ({ user, message }) => {
               isRead
                 ? <CheckCheck className="h-4 w-4 !text-blue-500" />
                 : isDelivered
-                  ? <CheckCheck className="h-4 w-4 !text-zinc-200" />
-                  : <Check className="h-4 w-4 !text-zinc-200" />
+                  ? <CheckCheck className="h-4 w-4 " />
+                  : <Check className="h-4 w-4 " />
             )}
             <h3 className="text-[10px] opacity-80 text-end">{formatTime(message?.createdAt)}</h3>
           </div>
