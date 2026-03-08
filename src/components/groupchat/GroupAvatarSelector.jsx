@@ -7,7 +7,7 @@ import { fetchUnsplashImages } from '../../utils/getRandomAvatar'
 
 
 
-const GroupAvatarSelector = ({ setSelectedAvatar, setShowAvatarPopup }) => {
+const GroupAvatarSelector = ({ setSelectedAvatar, setShowAvatarPopup, cardClass='' }) => {
 
     const { register, watch } = useForm()
     const [loading, setLoading] = useState(false)
@@ -48,12 +48,15 @@ const GroupAvatarSelector = ({ setSelectedAvatar, setShowAvatarPopup }) => {
     const handleSelectImg = (img) => {
         setSelectedAvatar(img)
         addNotification('sucess', 'Avatar Selected')
-        setShowAvatarPopup(false);
+        setTimeout(() => {
+            setShowAvatarPopup(false);
+            
+        }, 2000);
     }
 
     return (
-        <div className='w-full h-full backdrop-blur-md absolute z-[10] top-1/2 left-1/2 -translate-1/2'>
-            <div className='w-2/4 shadow-2xl rounded-lg bg-white absolute top-1/2 left-1/2 -translate-1/2 p-5'>
+        <div className='w-full h-full backdrop-blur-md absolute z-10 top-1/2 left-1/2 -translate-1/2'>
+            <div className={`w-2/4 shadow-2xl rounded-lg bg-white absolute top-1/2 left-1/2 -translate-1/2 p-5 ${cardClass}`}>
                 <div className='flex justify-end'>
                     <X className='w-5 h-5 text-zinc-400 cursor-pointer' strokeWidth={1.1} onClick={() => setShowAvatarPopup(false)} />
                 </div>

@@ -3,8 +3,10 @@ import { onSocketReady, getSocket } from "../services/socket";
 import useChatStore from "../store/chat.store";
 import useAuthStore from "../store/auth.store";
 import api from "../services/api";
+import useNotificationSound from "./useNotificationSound";
 
 const useSocketEvents = () => {
+  const { playSound } = useNotificationSound();
   useEffect(() => {
     const attachListeners = (socket) => {
       socket.off("typing");
@@ -33,11 +35,23 @@ const useSocketEvents = () => {
         const chatId = typeof message.chat === "object" ? message.chat._id : message.chat;
         if (message.sender._id === currentUserId) return;
 
+        if (message.type !== "system") {
+          const chat = chats.find((c) => c._id === chatId);
+          const isMuted = chat?.userSettings?.find(
+            (s) => s.user === currentUserId || s.user?._id === currentUserId
+          )?.muted;
+
+          if (!isMuted) {
+            const isGroup = chat?.isGroupChat || message.chat?.isGroupChat;
+            playSound(isGroup);
+          }
+        }
+
         const chatExists = chats.find((c) => c._id === chatId);
-        
+
 
         if (!chatExists) {
-          
+
           try {
             const res = await api.get(`${import.meta.env.VITE_API_BASE_URL}/chat`);
             useChatStore.setState({ chats: res.data });

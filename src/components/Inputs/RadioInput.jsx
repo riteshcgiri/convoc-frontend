@@ -1,6 +1,6 @@
 const CustomCheckbox = ({ label, name, register, error }) => {
     return (
-        <div className="col-span-2">
+        <div className="">
             <label className="flex items-center gap-3 cursor-pointer select-none text-primary">
                 <input type="checkbox" {...register(name)} className="peer hidden" />
                 <div className="w-6 h-6 border-2 border-primary rounded-md flex items-center justify-center transition peer-checked:bg-primary peer-checked:border-primary">

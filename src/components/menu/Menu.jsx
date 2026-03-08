@@ -52,7 +52,7 @@ const Menu = () => {
                 {
                     title: userName || 'User Profile',
                     fnc: () => { },
-                    to: '/profile',
+                    to: '/chat/profile',
                     src: avatar,
                 },
 

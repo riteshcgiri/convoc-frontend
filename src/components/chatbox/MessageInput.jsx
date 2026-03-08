@@ -7,6 +7,7 @@ import ChatSharePopup from "../popups/ChatSharePopup";
 import useChatStore from "../../store/chat.store";
 import { getSocket } from "../../services/socket";
 import useClickOutside from "../../hooks/useClickOutside";
+import useAuthStore from "../../store/auth.store";
 
 
 
@@ -14,18 +15,26 @@ const MessageInput = () => {
   const { register, handleSubmit, setValue, getValues, watch, reset } = useForm();
   const [showEmoji, setShowEmoji] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
-  const { sendMessage, selectedChat } = useChatStore()
-  
-
-
   const [isInputEmpty, setIsInputEmpty] = useState(true)
+  const { sendMessage, selectedChat } = useChatStore()
+  const { user } = useAuthStore()
   const messageInput = watch("message")
   const inputRef = useRef();
   const isTypingRef = useRef(false);
   const popupRef = useRef();
   const typingTimeoutRef = useRef(null);
+  const isGroupChat = selectedChat?.isGroupChat;
+  const onlyAdminsCanMessage = selectedChat?.onlyAdminsCanMessage;
+  const userSetting = selectedChat?.userSettings?.find( s => s.user?._id === user?._id || s.user === user?._id);
+  const isAdmin = userSetting?.isAdmin;
+  const isMutedByAdmin = userSetting?.mutedByAdmin;
 
-  
+  const cannotMessage = isGroupChat && ( (onlyAdminsCanMessage && !isAdmin) || isMutedByAdmin );
+
+
+
+
+
   useClickOutside(popupRef, () => setShowPopup(false))
 
   const handleTyping = () => {
@@ -77,7 +86,7 @@ const MessageInput = () => {
 
 
   const onSubmit = async (data) => {
-    
+
     const socket = getSocket();
     if (!data.message.trim()) return;
     await sendMessage(data.message)
@@ -150,15 +159,24 @@ const MessageInput = () => {
   }, [showEmoji]);
 
   useEffect(() => {
-    if(!selectedChat)
-       return;
-    inputRef.current.focus()
+    if (!selectedChat)
+      return;
+    inputRef?.current?.focus()
   }, [selectedChat])
+
+  if(cannotMessage){
+    return (
+      <div className="w-full flex flex-col items-center py-3 bg-zinc-200"> 
+        <h2 className="text-primary font-semibold tracking-wide">{isMutedByAdmin ? 'You have been muted by an admin' : "You don't have permission to send messages."}</h2>
+        <h3 className="text-zinc-400 text-xs">Contact Admin for details</h3>
+      </div>
+    )
+  }
 
   return (
     <div className="h-16 border-t border-zinc-300 relative  px-6 flex gap-3 items-center ">
       {showEmoji && (
-        <div className="absolute bottom-16 z-[10]">
+        <div className="absolute bottom-16 z-10">
           <EmojiPicker className="" height={400} previewConfig={{ showPreview: false }} autoFocusSearch={false} emojiStyle="facebook" onEmojiClick={handleEmojiClick} />
         </div>
       )}

@@ -9,7 +9,7 @@ const groupFormSchema = z.object({
 
   groupAbout: z
     .string()
-    .max(200, "About must be less than 200 characters")
+    .max(500, "About must be less than 500 characters")
     .trim()
     .optional(),
 

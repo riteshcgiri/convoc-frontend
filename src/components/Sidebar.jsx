@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import Logo from "./Logo/Logo";
 import Button from "./Inputs/Button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import UserCard from "./chatbox/UserCard";
 import useChatStore from "../store/chat.store";
 import useAuthStore from "../store/auth.store";
@@ -16,7 +16,7 @@ const Sidebar = () => {
     const [userResults, setUserResults] = useState([]);
     const [messageResults, setMessageResults] = useState([]);
     const [searching, setSearching] = useState(false);
-
+    const navigate = useNavigate()
     const { chats, fetchChats, selectChat, searchUsers, searchMessages, startChat } = useChatStore();
     const onlineUsers = useChatStore((state) => state.onlineUsers);
     const { user } = useAuthStore();
@@ -80,7 +80,7 @@ const Sidebar = () => {
     };
 
     return (
-        <div className="w-sm bg-white border-r border-zinc-300 flex flex-col z-10 h-full">
+        <div className="w-87.5 bg-white border-r border-zinc-300 flex flex-col z-10 h-full">
             <div className="px-5 py-4 border-b border-zinc-300">
                 <Link to={'/chat'}> 
                     <Logo type={4} className={'h-10 -mb-2'} /> 
@@ -172,7 +172,7 @@ const Sidebar = () => {
                         ) : (
                             filteredChats?.map((chat) => {
                                 const formatted = transformerChat(chat, user, onlineUsers);
-                                return ( <UserCard key={chat._id} {...formatted} onClick={() => selectChat(chat)}/>);
+                                return ( <UserCard key={chat._id} {...formatted} onClick={() => {navigate('/chat'); selectChat(chat) }}/>);
                             })
                         )}
                     </div>

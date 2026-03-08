@@ -1,10 +1,11 @@
-import { BellOff, ChevronDown, User, MessageSquareText, Heart, Ban, Trash2 } from "lucide-react";
+import { BellOff, ChevronDown, User, MessageSquareText, Heart, Ban, Trash2, UserX } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { AnimatePresence } from "framer-motion";
 import ChatMenuPopup from "../popups/ChatMenuPopup";
 import useClickOutside from "../../hooks/useClickOutside";
 import useChatStore from "../../store/chat.store";
 import Portal from "../../hooks/usePortal";
+import useAuthStore from "../../store/auth.store";
 
 
 const UserCard = ({ username, name, lastMsg, lastMsgTime, src, isActive, isMuted, unread, unreadCount, onClick, chatId }) => {
@@ -12,14 +13,21 @@ const UserCard = ({ username, name, lastMsg, lastMsgTime, src, isActive, isMuted
   const [popupPos, setPopupPos] = useState({ x: 0, y: 0 });
   const popupRef = useRef(null);
   const cardRef = useRef(null);
+
+  const {user} = useAuthStore()
   const typingChats = useChatStore((state) => state.typingChats)
   const isTyping = typingChats[chatId]
-
+  const {setShowChatProfile,showChatProfile, selectedChat, toggleFavourite, deleteChatForUser} = useChatStore();
+  const currentUser = selectedChat?.users?.find(u => u?._id === user?._id);
+  const currentUserSetting = selectedChat?.userSettings?.find(u => u?.user === currentUser?._id)
+  const isFav = currentUserSetting?.favourite;
+  // console.log(isFav);
+  
   const menuOptions = [
     {
-      title: 'View Profile',
-      icon: <User className='w-5 h-5' />,
-      fnc: () => { },
+      title: showChatProfile ? 'Hide Profile' : 'View Profile',
+      icon: showChatProfile ? <UserX className='w-5 h-5' /> : <User className='w-5 h-5' /> ,
+      fnc: () => setShowChatProfile(),
       to: `/profile?user=`
     },
     {
@@ -29,9 +37,9 @@ const UserCard = ({ username, name, lastMsg, lastMsgTime, src, isActive, isMuted
       to: `/mark-as-read?user=`
     },
     {
-      title: 'Add to favourites',
-      icon: <Heart className='w-5 h-5' />,
-      fnc: () => { },
+      title: isFav ? 'Remove as favourites' : 'Add to favourites',
+      icon: <Heart className={`w-5 h-5 ${isFav ? 'fill-red-500 text-red-500' : ''}`} />,
+      fnc: async() =>  await toggleFavourite(selectedChat?._id),
       to: `/add-to-fav?user=`
     },
     {
@@ -43,7 +51,7 @@ const UserCard = ({ username, name, lastMsg, lastMsgTime, src, isActive, isMuted
     {
       title: 'Delete Chat',
       icon: <Trash2 className='w-5 h-5' />,
-      fnc: () => { },
+      fnc: async () => await deleteChatForUser(selectedChat._id),
       to: `/delete-chat?user=`
     },
 
@@ -75,7 +83,7 @@ const UserCard = ({ username, name, lastMsg, lastMsgTime, src, isActive, isMuted
           {isTyping ? <h2 className="text-green-500 text-xs font-normal ">Typing...</h2> : <h3 className={`text-xs font-normal ${unread ? 'text-green-500' : 'text-zinc-400'}`}> {lastMsg}</h3>}
         </div>
         <div className="flex items-end flex-col gap-3 relative">
-          <ChevronDown onClick={() => setShowPopup(prev => !prev)} className="w-7 h-7 invisible transition-all group-hover:visible hover:bg-primary/20 rounded-sm text-primary cursor-pointer p-1" />
+          <ChevronDown onClick={handleShowPopup} className="w-7 h-7 invisible transition-all group-hover:visible hover:bg-primary/20 rounded-sm text-primary cursor-pointer p-1" />
           <div className="flex items-center gap-3">
             {unread && <div className={`w-4 h-4 p-2 bg-primary text-white rounded-full text-[10px] flex items-center justify-center`}>{unreadCount}</div>}
             {isMuted && <BellOff className="text-zinc-400 w-4 h-4 transition-all duration-200" />}
@@ -88,7 +96,7 @@ const UserCard = ({ username, name, lastMsg, lastMsgTime, src, isActive, isMuted
         {showPopup && (
           <Portal children={
             <div ref={popupRef} style={{ position: "fixed", top: popupPos.y, left: popupPos.x, zIndex: 9999, }} >
-              <ChatMenuPopup options={menuOptions} className={'left-full top-0 z-[100]'} />
+              <ChatMenuPopup options={menuOptions} className={'left-full top-0 z-100'} />
             </div>} />
 
         )}

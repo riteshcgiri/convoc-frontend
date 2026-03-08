@@ -1,6 +1,6 @@
 import { detectPlatform, parseAbout, extractUsername } from "../utils/aboutFormatter";
 import DOMPurify from "dompurify";
-import { Instagram, Twitter, Github, Chromium, Linkedin, Hash, Building, GraduationCap, MapPin, Sparkles } from 'lucide-react';
+import { Instagram, Twitter, Github, Globe , Linkedin, Hash,Youtube, Building, GraduationCap, MapPin, Sparkles } from 'lucide-react';
 import { FaSpotify, FaSteam } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -12,7 +12,8 @@ const iconMap = {
     spotify: FaSpotify,
     steam: FaSteam,
     linkedin: Linkedin,
-    website: Chromium
+    youtube : Youtube,
+    website: Globe
 };
 
 const platformColors = {
@@ -41,7 +42,7 @@ const itemVariants = {
 
 const AboutFormatter = ({ bio }) => {
     const parsed = parseAbout(bio);
-
+    
     // Separate links from other items for a dedicated links row
     const mainItems = parsed?.filter(i => i?.type !== "link");
     const links = parsed?.filter(i => i?.type === "link");
@@ -114,7 +115,7 @@ const AboutFormatter = ({ bio }) => {
                 <motion.div variants={itemVariants} className="grid grid-cols-2 gap-1 p-1">
                     {links.map((item, index) => {
                         const platform = detectPlatform(item?.value);
-                        const Icon = iconMap[platform];
+                        const Icon = iconMap[platform] || Globe;
                         const colors = platformColors[platform] || platformColors.website;
                         const username = extractUsername(item?.value);
 

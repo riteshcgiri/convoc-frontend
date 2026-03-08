@@ -17,7 +17,7 @@ const Switch = ({ name, control, label, defaultValue = false, parentClass = "",}
     };
 
     return (
-        <div className={`flex items-center gap-4 cursor-pointer outline-none focus:ring-2 focus:ring-primary rounded-md ${parentClass}`}
+        <div className={`flex items-center gap-4 cursor-pointer outline-none group rounded-md ${parentClass}`}
             onClick={handleToggle}
             onKeyDown={handleKeyDown}
             tabIndex={0}
@@ -25,7 +25,7 @@ const Switch = ({ name, control, label, defaultValue = false, parentClass = "",}
             aria-checked={value}
         >
             {/* Track */}
-            <motion.div className={`w-14 h-7 rounded-full p-1 flex items-center transition-colors duration-300 ${value ? "bg-primary" : "bg-gray-300" }`} layout>
+            <motion.div className={`w-14 h-7 rounded-full p-1 flex items-center group-focus:ring-2 ring-offset-1 group-focus:ring-primary transition-colors duration-300 ${value ? "bg-primary" : "bg-gray-300" }`} layout>
                 {/* Thumb */}
                 <motion.div
                     className="w-5 h-5 bg-white rounded-full shadow-md"

@@ -3,6 +3,7 @@ import Sidebar from "../../components/Sidebar";
 import ChatContainer from "../../components/chatbox/ChatContainer";
 import { Route, Routes } from "react-router-dom";
 import CreateGroup from "../../components/groupchat/CreateGroup";
+import UserProfile from "../../components/user/UserProfile";
 
 
 const Chat = () => {
@@ -13,7 +14,7 @@ const Chat = () => {
       <Routes>
         <Route path="/" element={<ChatContainer />} />
         <Route path="/create-group" element={<CreateGroup />} />
-
+        <Route path="/profile" element={<UserProfile />} />
       </Routes>
       
     </div>

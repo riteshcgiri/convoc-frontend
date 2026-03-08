@@ -3,7 +3,6 @@ import api from "../services/api";
 import useNotificationStore from "./notification.store";
 import getRandomAvatar from "../utils/getRandomAvatar";
 
-
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/auth`;
 
 
@@ -24,7 +23,7 @@ const useAuthStore = create((set, get) => ({
             set({ loading: true, error: null });
             const avatar = await getRandomAvatar();
 
-            const res = await api.post(`${API_URL}/signup`, {...data, avatar : avatar});
+            const res = await api.post(`${API_URL}/signup`, { ...data, avatar: avatar });
 
             set({
                 loading: false,
@@ -52,7 +51,7 @@ const useAuthStore = create((set, get) => ({
 
             localStorage.setItem("token", loginRes.data.token);
 
-            
+
             set({
                 user: loginRes.data,
                 token: loginRes.data.token,
@@ -64,7 +63,9 @@ const useAuthStore = create((set, get) => ({
 
 
             useNotificationStore.getState().addNotification("success", `Logged In successfully `);
-            navigate("/chat");
+            const params = new URLSearchParams(window.location.search);
+            const redirect = params.get("redirect");
+            navigate(redirect || "/chat");
 
         } catch (err) {
             set({ loading: false, error: err.response?.data?.message || "Login Failed!!", });
@@ -185,16 +186,42 @@ const useAuthStore = create((set, get) => ({
     checkAuth: async (navigate) => {
         try {
             const token = localStorage.getItem("token");
-            if (!token) return;
+            if (!token) {
+                set({ loading: false });
+                return
+            };
             set({ loading: true });
             const res = await api.get(`${API_URL}/me`);
             set({ user: res.data, token, isAuth: true, loading: false, });
         } catch (error) {
             localStorage.removeItem("token");
-            set({ user: null, token: null, isAuth: false, loading: false,});
+            set({ user: null, token: null, isAuth: false, loading: false, });
             navigate('/signin')
-            useNotificationStore().getState().addNotification('error',error)
+            useNotificationStore().getState().addNotification('error', error)
         }
+    },
+    
+    updateProfile: async (data) => {
+        const res = await api.put(`${API_URL}/update-profile`, data);
+        set({ user: res.data });
+        return res.data;
+    },
+
+    changePassword: async (data) => {
+        const res = await api.put(`${API_URL}/change-password`, data);
+        return res.data;
+    },
+
+    disableAccount: async () => {
+        await api.put(`${API_URL}/disable-account`);
+        localStorage.removeItem("token");
+        set({ user: null, token: null, isAuth: false });
+    },
+
+    deleteAccount: async (password) => {
+        await api.delete(`${API_URL}/delete-account`, { data: { password } });
+        localStorage.removeItem("token");
+        set({ user: null, token: null, isAuth: false });
     },
 
 

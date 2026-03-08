@@ -13,6 +13,12 @@ const useChatStore = create((set, get) => ({
   typingChats: {},
   onlineUsers: {},
   loading: false,
+  showChatProfile: false,
+
+  setShowChatProfile: () => {
+    const { showChatProfile } = get()
+    set({ showChatProfile: !showChatProfile })
+  },
 
   fetchChats: async () => {
     const res = await api.get(`${API_URL}/chat`);
@@ -192,10 +198,10 @@ const useChatStore = create((set, get) => ({
         messages: [],
       }));
       useNotificationStore.getState().addNotification('success', 'Chat Deleted')
-      
+
     } catch (error) {
       useNotificationStore.getState().addNotification('error', error || 'Please Select a chat to delete')
-      throw new Error("chat Delete Err : ",error || 'Failed to delete chat')
+      throw new Error("chat Delete Err : ", error || 'Failed to delete chat')
 
 
     }
@@ -239,26 +245,145 @@ const useChatStore = create((set, get) => ({
   },
 
   removeGroupMember: async (chatId, userId) => {
-    const res = await api.delete(`${API_URL}/chat/${chatId}/members/${userId}`);
-    useChatStore.getState().updateChat(res.data);
-    return res.data;
+    try {
+      if (!userId)
+        return
+      const res = await api.delete(`${API_URL}/chat/${chatId}/members/${userId}`);
+      useChatStore.getState().updateChat(res.data);
+      return res.data;
+
+    } catch (error) {
+      console.log({ message: error || 'Failed to from group' })
+    }
   },
 
   leaveGroup: async (chatId) => {
-    await api.delete(`${API_URL}/chat/${chatId}/leave`);
-    useChatStore.getState().removeChat(chatId);
+    try {
+      await api.delete(`${API_URL}/chat/${chatId}/leave`);
+      useChatStore.getState().removeChat(chatId);
+
+    } catch (error) {
+
+      console.log({ message: error || 'Failed to leave group' })
+    }
   },
 
   makeAdmin: async (chatId, userId) => {
-    const res = await api.patch(`${API_URL}/chat/${chatId}/admin/${userId}`);
-    useChatStore.getState().updateChat(res.data);
-    return res.data;
+    try {
+      const res = await api.patch(`${API_URL}/chat/${chatId}/admin/${userId}`);
+      useChatStore.getState().updateChat(res.data);
+      return res.data;
+
+    } catch (error) {
+
+      console.log({ message: error || 'Failed to assign as admin' })
+    }
   },
 
   updateGroupInfo: async (chatId, data) => {
-    const res = await api.put(`${API_URL}/chat/${chatId}`, data);
-    useChatStore.getState().updateChat(res.data);
-    return res.data;
+    try {
+      set({ loading: true })
+      const { groupName, ...rest } = data
+      const payload = { ...rest, name: groupName }
+      const res = await api.put(`${API_URL}/chat/${chatId}`, payload);
+      useChatStore.getState().updateChat(res.data);
+      return res.data;
+    } catch (error) {
+      set({ loading: false })
+      throw error
+    } finally {
+      set({ loading: false })
+    }
+
+  },
+  dismissAdmin: async (chatId, userId) => {
+    try {
+      const res = await api.patch(`${API_URL}/chat/${chatId}/dismiss/${userId}`);
+      useChatStore.getState().updateChat(res.data);
+      return res.data;
+
+    } catch (error) {
+
+      console.log({ message: error || 'Failed to remove admin access' })
+    }
+  },
+
+  muteMember: async (chatId, userId) => {
+    // wire to backend later
+    console.log("mute member:", userId);
+  },
+
+  toggleMute: async (chatId) => {
+    try {
+      const res = await api.put(`${API_URL}/chat/${chatId}/mute`);
+      const currentUserId = useAuthStore.getState().user._id;
+      const newMuted = res.data.muted;
+
+      set((state) => {
+        const updateUserSettings = (userSettings) =>
+          userSettings.map(s => s.user === currentUserId || s.user?._id === currentUserId ? { ...s, muted: newMuted } : s);
+
+        return {
+          chats: state.chats.map(chat => chat._id !== chatId ? chat : { ...chat, userSettings: updateUserSettings(chat.userSettings) }),
+          selectedChat: state.selectedChat?._id === chatId ? { ...state.selectedChat, userSettings: updateUserSettings(state.selectedChat.userSettings) } : state.selectedChat
+        };
+      });
+      useNotificationStore.getState().addNotification('success', newMuted ? 'Notification Off' : 'Notification On')
+
+      return res.data;
+    } catch (error) {
+      useNotificationStore.getState().addNotification('error', 'Failed to update Notfiation Settings')
+      console.error('toggleMute error:', error);
+      throw error;
+    }
+  },
+
+  toggleFavourite: async (chatId) => {
+    try {
+      if (!chatId)
+        return useNotificationStore.getState().addNotification('error', 'Chat Id not found')
+
+      const res = await api.patch(`${API_URL}/chat/${chatId}/favourite`);
+      const currentUserId = useAuthStore.getState().user._id;
+
+      set((state) => {
+        const updatedChats = state.chats.map(chat => {
+          if (chat._id !== chatId) return chat;
+          return {
+            ...chat,
+            userSettings: chat.userSettings.map(s => s.user === currentUserId || s.user?._id === currentUserId ? { ...s, favourite: !s.favourite } : s
+            )
+          };
+        });
+
+        const updatedSelected = state.selectedChat?._id === chatId
+          ? {
+            ...state.selectedChat,
+            userSettings: state.selectedChat.userSettings.map(s => s.user === currentUserId || s.user?._id === currentUserId ? { ...s, favourite: !s.favourite } : s
+            )
+          }
+          : state.selectedChat;
+
+        return { chats: updatedChats, selectedChat: updatedSelected };
+      });
+
+      useNotificationStore.getState().addNotification('success', res?.data || 'Fav List Updated')
+
+    } catch (error) {
+      useNotificationStore.getState().addNotification('error', error?.message || 'Failed to Add as Favourite')
+      throw new Error(error)
+    }
+  },
+  
+  joinViaInviteLink: async (inviteLink) => {
+    const res = await api.post(`${API_URL}/chat/join/${inviteLink}`);
+    const chat = res.data;
+    set((state) => {
+      const exists = state.chats.find(c => c._id === chat._id)
+      if (exists) return state
+      return { chats: [chat, ...state.chats] }
+    })
+    return chat;
   },
 
 

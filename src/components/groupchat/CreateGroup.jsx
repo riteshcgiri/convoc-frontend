@@ -101,7 +101,8 @@ const CreateGroup = () => {
                 users: selectedUsers.map(u => u._id),
                 avatar: selectedAvatar,
                 onlyAdminsCanMessage: data.onlyAdminsCanMessage,
-                onlyAdminsCanAddMembers: data.onlyAdminsCanAddMembers
+                onlyAdminsCanAddMembers: data.onlyAdminsCanAddMembers,
+                onlyAdminsCanEditInfo : data.onlyAdminsCanEditInfo,
             };
             await createGroup(payload);
             addNotification('success', 'Group Created')
@@ -111,7 +112,7 @@ const CreateGroup = () => {
 
 
         } catch (error) {
-            addNotification('error', error)
+            addNotification('error', error?.message || 'Failed to create group')
             setLoading(false)
 
         } finally {
@@ -133,14 +134,14 @@ const CreateGroup = () => {
                     <img src={bannerImg} className='h-full w-full object-cover' alt="" />
                 </div>
                 {/* Group Heading & Close Button */}
-                <div className='flex items-center justify-between px-5 py-3 z-[2] text-white'>
+                <div className='flex items-center justify-between px-5 py-3 z-2 text-white'>
                     <h2 className=' font-bold text-xl'>Create New Group</h2>
                     <div className='hover:bg-primary/30 transition-all cursor-pointer p-2 rounded-md' onClick={() => navigate('/chat')}>
                         <X />
                     </div>
                 </div>
                 {/* Banner Editor */}
-                <div className='flex justify-end px-5 py-3 z-[2]' >
+                <div className='flex justify-end px-5 py-3 z-2' >
                     <div className=' rounded-full cursor-pointer group p-2 bg-white text-primary'>
                         <PaintRoller className='group-hover:scale-110' strokeWidth={1.5} />
 
@@ -180,6 +181,7 @@ const CreateGroup = () => {
                     <MemberSection selectedUsers={selectedUsers} setSelectedUsers={setSelectedUsers} error={errors["selectedMembers"]} />
                     <Switch key={'onlyAdminsCanMessage'} name={'onlyAdminsCanMessage'} register={register} setValue={setValue} label={'Only Admin Can Send Message'} control={control} parentClass={''} />
                     <Switch key={'onlyAdminsCanAddMembers'} name={'onlyAdminsCanAddMembers'} register={register} setValue={setValue} label={'Only Admin Can Add Members'} control={control} parentClass={''} />
+                    <Switch key={'onlyAdminsCanEditInfo'} name={'onlyAdminsCanEditInfo'} register={register} setValue={setValue} label={'Only Admin Can Edit Group'} control={control} parentClass={''} />
 
                     <Button children={<div className='flex items-center justify-center relative'>{loading ? <LoaderCircle className={'animate-spin w-7 h-7'} /> : 'Create Group'}</div>} className={'w-full cursor-pointer transition-all hover:scale-[1.01]  mx-auto px-10 py-3 bg-primary col-span-2 rounded-md disabled:bg-zinc-400 disabled:cursor-not-allowed text-white'} disabled={false} type={'submit'} />
                 </form>

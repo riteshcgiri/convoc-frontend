@@ -23,5 +23,6 @@ export const transformerChat = (chat, currentUser, onlineUsers = {}) => {
     unreadCount: chat.unreadCount || 0,
     about: chat.isGroupChat ? (chat.groupAbout || "") : (otherUser?.about || ""),
     createdAt : new Date(chat?.createdAt)?.toLocaleDateString('en-IN',  {month: "short", day: "2-digit", year: "numeric",}),
+    banner : chat.groupBannerColor || '#6366f1'
   };
 };

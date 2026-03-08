@@ -36,7 +36,7 @@ const MemberSection = ({ selectedUsers, setSelectedUsers, error }) => {
     const { searchUsers } = useChatStore();
     const searchTimeout = useRef(null);
 
-    const isSearchActive = searchQuery.trim().length > 0 || selectedUsers.length > 0;
+    const isSearchActive = searchQuery?.trim()?.length > 0 || selectedUsers?.length > 0;
 
     const addUser = useCallback((user) => {
         const alreadyExists = selectedUsers?.some((s) => s?._id === user?._id);
