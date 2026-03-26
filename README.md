@@ -3,6 +3,9 @@
 Modern real-time chat application frontend built with **React + Vite**.\
 Part of the full-stack **CONVOC MERN Chat Platform**.
 
+This is a Live Chat application which i have built with react and other libraries, and i have made it from scratch.
+including Figma design of this project.
+
 ------------------------------------------------------------------------
 
 ## 🚀 Tech Stack

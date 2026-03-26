@@ -1,9 +1,17 @@
+import useAuthStore from "../../store/auth.store"
 import { wordPrettier } from "../../utils/wordPrettier"
+import { useFormContext, useWatch } from "react-hook-form"
 
 
+const TextInput = ({ label, error, register, name, type = "text", parentClass, labelClass, inputClass, frontIcon, rearIcon, placeholder = '', isReadOnly = false, status = null, value }) => {
 
-const TextInput = ({ label, error, register, name, type = "text", parentClass, labelClass, inputClass, frontIcon, rearIcon, placeholder='', isReadOnly=false }) => {
+    const {user} = useAuthStore()
+    const isCurrentUsername = value === user?.username
 
+    const isUsername = name === 'username'
+    const isChecking = status === "checking"
+    const isAvailable = status === "available"
+    const isTaken = status === "taken"
     return (
         <div className={`relative w-full ${parentClass}`}>
             <label htmlFor={name} className={`select-none rounded-md absolute -top-2 font-semibold tracking-wide left-4 bg-white px-2 text-sm text-primary  ${isReadOnly ? 'text-zinc-400' : ''} ${labelClass}`}>
@@ -18,6 +26,11 @@ const TextInput = ({ label, error, register, name, type = "text", parentClass, l
             </div>
             {error && (<p className="text-red-500 text-sm mt-1"> {error.message} </p>
             )}
+            
+            {status && isUsername && !isCurrentUsername && value.length > 1 && (<p className={`text-xs ${isChecking ? ' text-zinc-400' : isAvailable ? 'text-green-500' : 'text-red-500'}`}>{isChecking ? 'Checking...' : isAvailable ?  '✓ Username available' : isTaken && '✗ Username already taken'}</p>)}
+            {isUsername && isCurrentUsername &&  (<p className="text-xs text-zinc-400">Current username</p>)}
+            {isUsername && value?.length <= 1 &&  (<p className="text-xs text-red-500">Username couldn't be empty.</p>)}
+            
         </div>
     )
 }

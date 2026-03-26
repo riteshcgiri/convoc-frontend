@@ -18,8 +18,6 @@ const GroupAvatarSelector = ({ setSelectedAvatar, setShowAvatarPopup, cardClass=
 
     useEffect(() => {
         if (searchQuery?.trim().length <= 2 || !searchQuery) {
-            setAvatarResults([]);
-            // addNotification('info', 'Please Enter atleat 1 word')
             return;
         }
         setLoading(true)
@@ -28,7 +26,6 @@ const GroupAvatarSelector = ({ setSelectedAvatar, setShowAvatarPopup, cardClass=
             try {
                 const res = await fetchUnsplashImages(searchQuery, 8);
                 setAvatarResults(res ?? []);
-                console.log(avatarResults)
 
             } catch (error) {
                 setLoading(false)

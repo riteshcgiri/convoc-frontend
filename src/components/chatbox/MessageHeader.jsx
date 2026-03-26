@@ -9,7 +9,7 @@ import { transformerChat } from '../../utils/transformerChat'
 import VideoAudio from './VideoAudio';
 
 const MessageHeader = () => {
-    const { selectedChat, showChatProfile, setShowChatProfile, toggleFavourite, clearChat, deleteChatForUser, toggleMute } = useChatStore();
+    const { selectedChat, showChatProfile, setShowChatProfile, toggleFavourite, clearChat, deleteChatForUser, toggleMute, messages, enterSelectMode } = useChatStore();
     const typingChats = useChatStore((state) => state.typingChats)
     const onlineUsers = useChatStore((state) => state.onlineUsers);
     const { user } = useAuthStore();
@@ -33,52 +33,45 @@ const MessageHeader = () => {
             title: showChatProfile ? 'Hide Profile' : 'View Profile',
             icon: showChatProfile ? <UserX className='w-5 h-5' /> : <User className='w-5 h-5' />,
             fnc: () => { setShowChatProfile() },
-            to: `/profile?user=`
         },
         {
             title: 'Select Messages',
             icon: <SquareCheck className='w-5 h-5' />,
-            fnc: () => { },
-            to: `/`
+            fnc: () => {
+                enterSelectMode(messages[messages.length - 1]._id)
+             },
         },
         {
             title: isFav ? 'Remove as favourites' : 'Add to favourites',
             icon: <Heart className={`w-5 h-5 ${isFav ? 'fill-red-500 text-red-500' : ''}`} />,
             fnc: async () => await toggleFavourite(selectedChat?._id),
-            to: `/add-to-fav?user=`
         },
         {
             title: `${isChatMute ? 'Unmute' : 'Mute'} Notifications`,
             icon: isChatMute ? <Bell className='w-5 h-5' /> : <BellOff className='w-5 h-5' />,
             fnc: async () => await toggleMute(selectedChat._id),
-            to: `/mute-notifications?user=`
         },
         {
             title: 'Close chat',
             icon: <SquareX className='w-5 h-5' />,
-            fnc: () => clearChat(),
-            to: `/close-chat?user=`
+            fnc: () => clearChat(), 
         },
         {
             title: 'Report',
             icon: <ThumbsDown className='w-5 h-5' />,
             fnc: () => { },
-            to: `/block?user=`,
             style: 'hover:text-red-500 hover:bg-red-100'
         },
         {
             title: 'Block',
             icon: <Ban className='w-5 h-5' />,
             fnc: () => { },
-            to: `/block?user=`,
             style: 'hover:text-red-500 hover:bg-red-100'
         },
         {
             title: 'Delete Chat',
             icon: <Trash2 className='w-5 h-5' />,
-            fnc: async () => await deleteChatForUser(selectedChat._id),
-            to: `/delete-chat?user=`,
-
+            fnc: async () => await deleteChatForUser(selectedChat._id), 
             style: 'hover:text-red-500 hover:bg-red-100'
         },
 
@@ -109,7 +102,7 @@ const MessageHeader = () => {
                     {<span>{String(chatUI?.about).slice(0, 20) || 'Sample About'}</span>}
                 </div>
             </div>
-            <VideoAudio />
+            <VideoAudio chat={selectedChat} />
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className='flex items-center gap-3 text-primary'>
                 <motion.div whileHover={{ scale: 1.12 }} whileTap={{ scale: 0.9 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className='rounded-full cursor-pointer p-3 transition-all duration-300 hover:bg-primary/20'>
                     <Search className='w-5  h-5 ' />

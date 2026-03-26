@@ -7,22 +7,32 @@ import { useEffect, useState } from 'react';
 import ChatProfile from './ChatProfile';
 import useNotificationStore from '../../store/notification.store';
 import useEscape from '../../hooks/useEscape'
+import BulkActionBar from './BulkActionBar';
 
 
 const ChatContainer = () => {
   const selectedChat = useChatStore((state) => state.selectedChat);
-  const { updateGroupInfo, showChatProfile, setShowChatProfile } = useChatStore();
+  const { updateGroupInfo, showChatProfile, setShowChatProfile, exitSelectMode } = useChatStore();
   const [showUserProfile, setShowUserProfile] = useState(false)
   const [showAvatarPopup, setShowAvatarPopup] = useState(false)
   const [avatarLoading, setAvatarLoading] = useState(false)
   const [selectedAvatar, setSelectedAvatar] = useState(null)
   const [showUpdateGroup, setShowUpdateGroup] = useState(false)
   const { addNotification } = useNotificationStore()
+  const {selectMode} = useChatStore()
 
  useEscape(useChatStore.getState().clearChat)
   useEffect(() => {
     updateGroupAvatar();
   }, [selectedAvatar]);
+
+ useEffect(() => {
+  const handler = (e) => {
+    if (e.key === "Escape" && selectMode) exitSelectMode();
+  };
+  window.addEventListener("keydown", handler);
+  return () => window.removeEventListener("keydown", handler);
+}, [selectMode]);
 
   const updateGroupAvatar = async () => {
     try {
@@ -59,7 +69,7 @@ const ChatContainer = () => {
           <MessagesArea selectedAvatar={selectedAvatar} setSelectedAvatar={setSelectedAvatar} showAvatarPopup={showAvatarPopup} setShowAvatarPopup={setShowAvatarPopup} showUpdateGroup={showUpdateGroup} setShowUpdateGroup={setShowUpdateGroup} />
         </div>
         <div>
-          <MessageInput />
+          {selectMode ? <BulkActionBar /> : <MessageInput />}
         </div>
       </div>
       {(showUserProfile || showChatProfile) && <ChatProfile avatarLoading={avatarLoading} showAvatarPopup={showAvatarPopup} setShowUpdateGroup={setShowUpdateGroup} setShowAvatarPopup={setShowAvatarPopup} onProfileClick={() => setShowChatProfile()} />}

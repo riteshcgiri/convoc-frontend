@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import useAuthStore from '../../store/auth.store'
 import MenuOption from './MenuOption'
-import { MessageSquare, Users, Settings, Image } from 'lucide-react'
+import { MessageSquare, Users, Settings, Image, LogOut, Bell, BellDot, Activity } from 'lucide-react'
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 const Menu = () => {
     const user = useAuthStore((state) => state?.user);
     const avatar = useAuthStore((state) => state?.user?.avatar);
     const userName = useAuthStore((state) => state?.user?.name);
+    const {logout} = useAuthStore()
     const [rect, setRect] = useState(null)
+    const navigate = useNavigate()
     // console.log(user);
     const parentRef = useRef(null)
 
@@ -16,7 +19,7 @@ const Menu = () => {
             title: 'topMenu',
             option: [
                 {
-                    title: 'New Chat',
+                    title: 'Chats',
                     icon: <MessageSquare className=' group-hover:fill-primary  group-hover:scale-[1.09] transition-all w-5 h-5' />,
                     fnc: () => { },
                     to: '/chat',
@@ -36,6 +39,20 @@ const Menu = () => {
             title: 'bottomMenu',
             option: [
                 {
+                    title: 'Activities',
+                    icon: <Activity className='  group-hover:scale-[1.09] transition-all w-5 h-5' />,
+                    fnc: () => {},
+                    to: '/chat/activities',
+                    img: '',
+                },
+                {
+                    title: 'Notifications',
+                    icon: <BellDot className='  group-hover:scale-[1.09] transition-all w-5 h-5' />,
+                    fnc: () => { },
+                    to: '/notifications',
+                    img: '',
+                },
+                {
                     title: 'Media',
                     icon: <Image className='  group-hover:scale-[1.09] transition-all w-5 h-5' />,
                     fnc: () => { },
@@ -47,6 +64,12 @@ const Menu = () => {
                     icon: <Settings className=' group-hover:scale-[1.09] transition-all  w-5 h-5' />,
                     fnc: () => { },
                     to: '/settings',
+                    
+                },
+                {
+                    title: 'Logout',
+                    icon: <LogOut className=' group-hover:scale-[1.09] transition-all  w-5 h-5' />,
+                    fnc: async () => { await logout(navigate) },
                     
                 },
                 {

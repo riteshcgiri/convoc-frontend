@@ -21,7 +21,7 @@ const MenuOption = ({ menu, pClass }) => {
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className={`w-full flex justify-center flex-col gap-2 py-5 text-primary ${pClass}`}>
       {menu.map(m => (
-        <motion.div key={m.title} variants={itemVariants}>
+        <motion.div key={m.title} variants={itemVariants} onClick={m?.fnc}>
           <Link to={m?.to} className={`relative justify-center flex items-center transition-all cursor-pointer group ${m?.src ? 'rounded-full' : 'hover:bg-primary/20 py-3'}`} onMouseEnter={() => setHoveredTitle(m.title)} onMouseLeave={() => setHoveredTitle(null)}>
             
             {m?.src ? (

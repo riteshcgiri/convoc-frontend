@@ -14,6 +14,10 @@ const useChatStore = create((set, get) => ({
   onlineUsers: {},
   loading: false,
   showChatProfile: false,
+  replyTo: null,
+  editingMessage: null,
+  selectMode: false,
+  selectedMessages: [],
 
   setShowChatProfile: () => {
     const { showChatProfile } = get()
@@ -47,14 +51,34 @@ const useChatStore = create((set, get) => ({
     socket?.emit("message_read", { chatId: chat._id, userId });
   },
 
-  sendMessage: async (content) => {
+  sendMessage: async (content, replyTo = null, fileInfo = null) => {
     const { selectedChat } = get();
+    const { user } = useAuthStore.getState()
     const res = await api.post(`${API_URL}/message`, {
       chatId: selectedChat._id,
       content,
+      replyTo,
+      fileInfo,
     });
 
     const newMessage = res.data;
+
+    if (fileInfo?.localUrl) {
+      newMessage.localUrl = fileInfo.localUrl;
+      newMessage.fileInfo = {
+        ...newMessage.fileInfo,
+        localUrl: fileInfo.localUrl,
+      };
+    }
+
+    // ✅ ensure sender is correct
+    if (!newMessage.sender?._id) {
+      newMessage.sender = {
+        _id: user._id,
+        name: user.name,
+        avatar: user.avatar
+      };
+    }
 
     set((state) => ({
       messages: [...state.messages, newMessage],
@@ -75,11 +99,20 @@ const useChatStore = create((set, get) => ({
     set((state) => {
       const isCurrentChat = state.selectedChat?._id === chatId;
 
-      // Update messages array only if this chat is open
       let newMessages = state.messages;
       if (isCurrentChat) {
         const exists = state.messages.some((m) => m._id === message._id);
-        if (!exists) newMessages = [...state.messages, message];
+        if (!exists) {
+          const existing = state.messages.find(m => m._id === message._id)
+          newMessages = [...state.messages, {
+            ...message,
+            localUrl: existing?.localUrl || message.localUrl,
+            fileInfo: {
+              ...message.fileInfo,
+              localUrl: existing?.fileInfo?.localUrl || message.fileInfo?.localUrl,
+            }
+          }];
+        }
       }
 
       // Always update sidebar
@@ -138,7 +171,73 @@ const useChatStore = create((set, get) => ({
     }));
   },
 
-  // Search users
+  editMessage: async (messageId, content) => {
+    try {
+
+      const res = await api.patch(`${API_URL}/message/${messageId}/edit`, { content })
+      set((state) => ({
+        messages: state.messages.map(m => m._id === messageId ? { ...m, content: res.data.content, isEdited: res.data.isEdited, editedAt: res.data.editedAt } : m)
+      }))
+      return res.data;
+
+    } catch (error) {
+      useNotificationStore.getState().addNotification('error', error?.message || 'Failed to edit message')
+    }
+  },
+
+  deleteMessageForMe: async (messageId) => {
+    try {
+
+      const res = await api.patch(`${API_URL}/message/${messageId}/delete`)
+      set((state) => ({
+        message: state.messages.filter(m => m._id !== messageId)
+      }))
+      return res.data;
+
+    } catch (error) {
+      useNotificationStore.getState().addNotification('error', error?.message || 'Failed to delete message')
+    }
+  },
+
+  deleteMessageForEveryone: async (messageId) => {
+    try {
+      await api.patch(`${API_URL}/message/${messageId}/delete-everyone`);
+      set((state) => ({
+        messages: state.messages.map(m => m._id === messageId ? { ...m, isDeletedForEveryone: true, content: "This message was deleted" } : m)
+      }));
+    } catch (error) {
+      useNotificationStore.getState().addNotification('error', error?.message || 'Failed to delete message for everyone')
+    }
+  },
+
+  bulkDeleteForMe: async (messageIds) => {
+    const res = await api.patch(`${API_URL}/message/bulk-delete`, { messageIds });
+    const currentUserId = useAuthStore.getState().user._id;
+    // ✅ remove from local state immediately
+    set((state) => ({
+      messages: state.messages.filter(m => !messageIds.includes(m._id))
+    }));
+    return res.data;
+  },
+
+  bulkDeleteForEveryone: async (messageIds) => {
+    const res = await api.patch(`${API_URL}/message/bulk-delete-everyone`, { messageIds });
+    // ✅ mark as deleted in local state
+    set((state) => ({
+      messages: state.messages.map(m =>
+        messageIds.includes(m._id)
+          ? { ...m, isDeletedForEveryone: true, content: "This message was deleted" }
+          : m
+      )
+    }));
+    return res.data;
+  },
+
+  getMessageInfo: async (messageId) => {
+    const res = await api.get(`${API_URL}/message/${messageId}/info`);
+    return res.data;
+  },
+
   searchUsers: async (q) => {
     if (!q?.trim()) return [];
     if (q.length <= 2) {
@@ -150,14 +249,12 @@ const useChatStore = create((set, get) => ({
 
   },
 
-  // Search messages
   searchMessages: async (q) => {
     if (!q?.trim()) return [];
     const res = await api.get(`${API_URL}/message/search?q=${q}`);
     return res.data;
   },
 
-  // Start new chat with a user
   startChat: async (userId) => {
     const res = await api.post(`${API_URL}/chat`, { userId });
     const newChat = res.data;
@@ -296,6 +393,7 @@ const useChatStore = create((set, get) => ({
     }
 
   },
+
   dismissAdmin: async (chatId, userId) => {
     try {
       const res = await api.patch(`${API_URL}/chat/${chatId}/dismiss/${userId}`);
@@ -374,7 +472,7 @@ const useChatStore = create((set, get) => ({
       throw new Error(error)
     }
   },
-  
+
   joinViaInviteLink: async (inviteLink) => {
     const res = await api.post(`${API_URL}/chat/join/${inviteLink}`);
     const chat = res.data;
@@ -386,7 +484,44 @@ const useChatStore = create((set, get) => ({
     return chat;
   },
 
+  getMediaFiles: async (chatId, page = 1) => {
+    const res = await api.get(`${API_URL}/message/${chatId}/media/files?page=${page}&limit=20`);
+    return res.data;
+  },
 
+  getDocuments: async (chatId, page = 1) => {
+    const res = await api.get(`${API_URL}/message/${chatId}/media/docs?page=${page}&limit=20`);
+    return res.data;
+  },
+
+  getLinks: async (chatId, page = 1) => {
+    const res = await api.get(`${API_URL}/message/${chatId}/media/links?page=${page}&limit=20`);
+    return res.data;
+  },
+
+  enterSelectMode: (messageId) => set({
+    selectMode: true,
+    selectedMessages: messageId ? [messageId] : [],
+  }),
+  exitSelectMode: () => set({
+    selectMode: false,
+    selectedMessages: []
+  }),
+
+  toggleMessageSelection: (messageId) => set((state) => {
+    const already = state.selectedMessages.includes(messageId);
+    return {
+      selectedMessages: already ? state.selectedMessages.filter(id => id !== messageId) : [...state.selectedMessages, messageId]
+    }
+  }),
+  selectAll: (messageIds) => set({ selectedMessages: messageIds }),
+
+
+
+  setReplyTo: (message) => set({ replyTo: message }),
+  clearReplyTo: () => set({ replyTo: null }),
+  setEditMessage: (message) => set({ editingMessage: message }),
+  clearEditMessage: () => set({ editingMessage: null }),
   clearChat: () => set({ selectedChat: null, messages: [] }),
 }));
 

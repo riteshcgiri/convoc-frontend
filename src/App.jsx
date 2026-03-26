@@ -18,6 +18,7 @@ import { connectSocket } from './services/socket'
 import useSocket from './hooks/useSocket'
 import useSocketEvents from './hooks/useSocketEvents'
 import JoinGroup from './pages/chat/JoinGroup'
+import ReactivateAccount from './components/user/ReactivateAccount'
 
 
 const App = () => {
@@ -55,7 +56,7 @@ const App = () => {
   return (
 
     <div className='relative'>
-      <div className={`w-full h-screen bg-white ${!isAuth && ' px-20 py-5'} font-sansation`}>
+      <div className={`w-full h-dvh bg-white ${!isAuth && ' px-20 py-5'} font-sansation`}>
         {!isAuth && <Navbar />}
         <Routes >
           <Route path='/' element={<PublicGuard><Landing /></PublicGuard>} />
@@ -65,11 +66,12 @@ const App = () => {
           <Route path='/forget-password' element={<PublicGuard><ForgetPassword /></PublicGuard>} />
           <Route path='/reset-password' element={<ResetGuard><ResetPassword /></ResetGuard>} />
           <Route path="/join/:inviteLink" element={<JoinGroup />} />
+          <Route path="/reactivate/:token" element={<ReactivateAccount />} />
+          
 
 
           <Route path='/chat/*' element={<Chat />} />
         </Routes>
-
       </div>
 
       <NotificationManager />

@@ -200,16 +200,28 @@ const useAuthStore = create((set, get) => ({
             useNotificationStore().getState().addNotification('error', error)
         }
     },
-    
+
     updateProfile: async (data) => {
-        const res = await api.put(`${API_URL}/update-profile`, data);
-        set({ user: res.data });
-        return res.data;
+        try {
+            const res = await api.put(`${API_URL}/update-profile`, data);
+            set({ user: res.data });
+            return res.data;
+            
+        } catch (error) {
+            useNotificationStore.getState().addNotification('error', error?.message || 'Failed to update')
+        }
     },
 
     changePassword: async (data) => {
-        const res = await api.put(`${API_URL}/change-password`, data);
-        return res.data;
+        try {
+            set({ loading: true });
+            const res = await api.put(`${API_URL}/change-password`, data);
+            set({ loading: false });
+            return res.data;
+        } catch (err) {
+            set({ loading: false });
+            throw err; // ✅ rethrow so component can catch it
+        }
     },
 
     disableAccount: async () => {
@@ -232,10 +244,21 @@ const useAuthStore = create((set, get) => ({
 
 
 
-    logout: () => {
-        localStorage.removeItem("token");
-        set({ user: null, token: null, isAuth: false, });
-        useNotificationStore.getState().addNotification("success", `Logged Out `);
+    logout: async (navigate) => {
+        try {
+            await api.post(`${API_URL}/logout`)
+        } catch (error) {
+            useNotificationStore.getState().addNotification("error", error?.response?.message || `Failed to Logout `);
+            throw new Error(error)
+        } finally {
+            localStorage.removeItem("token");
+            set({ user: null, token: null, isAuth: false, });
+            useNotificationStore.getState().addNotification("success", `Logged Out `);
+            navigate('/signin')
+
+        }
+
+
     },
 
     clearError: () => set({ error: null }),
