@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { stopAllSounds } from '../hooks/useCallSocket'
 
 const useCallStore = create((set, get) => ({
   // STATES
@@ -19,7 +20,12 @@ const useCallStore = create((set, get) => ({
   clearIncomingCall: () => set({ incomingCall: null }),
 
   setActiveCall: (call) => set({ activeCall: call }),
-  setCallStatus: (status) => set({ callStatus: status }),
+  setCallStatus: (status) => {
+    if (status === 'connected' || status === 'connecting') {
+    stopAllSounds()    // ← kill all sounds when call connects
+  }
+    set({ callStatus: status })
+  },
 
   setLocalStream: (stream) => set({ localStream: stream }),
 
@@ -47,6 +53,7 @@ const useCallStore = create((set, get) => ({
     const { localStream, isMuted } = get()
     if (!localStream) return
     localStream.getAudioTracks().forEach(track => {
+      console.log("toggling local track:", track.label)
       track.enabled = isMuted
     })
     set({ isMuted: !isMuted })
@@ -54,6 +61,7 @@ const useCallStore = create((set, get) => ({
 
   endCall: () => {
     const { localStream, peerConnections } = get()
+    stopAllSounds()
     localStream?.getTracks().forEach(track => track.stop())
     Object.values(peerConnections).forEach(pc => pc.close())
     set({

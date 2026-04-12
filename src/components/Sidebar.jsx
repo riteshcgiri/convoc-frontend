@@ -80,10 +80,10 @@ const Sidebar = () => {
     };
 
     return (
-        <div className="w-87.5 bg-white border-r border-zinc-300 flex flex-col z-10 h-full">
-            <div className="px-5 py-4 border-b border-zinc-300">
+        <div className="lg:w-87.5 sm:w-full bg-white sm:border-none lg:border-r border-zinc-300 flex flex-col z-10 h-screen overflow-y-auto">
+            <div className="lg:px-5 sm:px-10 lg:py-4 sm:py-10 border-b border-zinc-300">
                 <Link to={'/chat'}> 
-                    <Logo type={4} className={'h-10 -mb-2'} /> 
+                    <Logo type={4} className={'lg:h-10 -mb-2'} /> 
                 </Link>
 
                 {/* Search Input */}

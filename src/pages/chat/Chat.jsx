@@ -7,13 +7,11 @@ import UserProfile from "../../components/user/UserProfile";
 import ChangePassword from '../../components/user/ChangePassword'
 import YourActivities from "../../components/activities/YourActivities";
 import FileTransferManager from "../../components/webRTC/FileTransferManager";
-import IncomingCallPopup from "../../components/calling/IncomingCallPopup";
-import CallScreen from '../../components/calling/CallScreen'
 
 
 const Chat = () => {
   return (
-    <div className="w-full h-full flex bg-gray-100 overflow-hidden relative">
+    <div className="w-full h-screen lg:flex sm:block bg-gray-100 overflow-hidden relative">
       <Menu />
       <Sidebar/>
       <Routes>
@@ -25,8 +23,6 @@ const Chat = () => {
         
       </Routes>
       <FileTransferManager />
-      <IncomingCallPopup />
-      <CallScreen/>
     </div>
   );
 };

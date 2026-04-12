@@ -8,6 +8,8 @@ import ChatProfile from './ChatProfile';
 import useNotificationStore from '../../store/notification.store';
 import useEscape from '../../hooks/useEscape'
 import BulkActionBar from './BulkActionBar';
+import IncomingCallPopup from '../calling/IncomingCallPopup'
+import CallScreen from '../calling/CallScreen'
 
 
 const ChatContainer = () => {
@@ -62,7 +64,7 @@ const ChatContainer = () => {
   }
 
   return (
-    <div className="flex-1 flex overflow-hidden h-full">
+    <div className="flex-1 flex overflow-hidden h-screen relative">
       <div className=" flex-1 flex flex-col h-full">
         <MessageHeader />
         <div className='w-full h-full flex-1 overflow-y-auto'>
@@ -73,6 +75,9 @@ const ChatContainer = () => {
         </div>
       </div>
       {(showUserProfile || showChatProfile) && <ChatProfile avatarLoading={avatarLoading} showAvatarPopup={showAvatarPopup} setShowUpdateGroup={setShowUpdateGroup} setShowAvatarPopup={setShowAvatarPopup} onProfileClick={() => setShowChatProfile()} />}
+        
+      <IncomingCallPopup />
+      <CallScreen/>
     </div>
   );
 };

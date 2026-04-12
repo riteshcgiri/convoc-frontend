@@ -96,9 +96,14 @@ const Menu = () => {
 
     return (
         // wrap your return's root div:
-        <motion.div initial={{ x: -60, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} ref={parentRef} className="w-14 h-full flex items-center justify-between flex-col border-r border-zinc-300">
+        <div className=''>
+            <div>
+
+            </div>
+        <motion.div initial={{ x: -60, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} ref={parentRef} className="lg:w-14  h-full lg:flex sm:hidden items-center justify-between flex-col border-r border-zinc-300">
             {menu?.map(m => <MenuOption key={m.title} menu={m.option} />)}
         </motion.div>
+        </div>
     )
 }
 

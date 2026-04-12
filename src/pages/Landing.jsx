@@ -5,9 +5,9 @@ import Button from '../components/Inputs/Button'
 
 const Landing = () => {
     return (
-            <div className='w-full p-10 flex mt-20'>
-                <div className='w-full flex items-start justify-center'>
-                    <Logo type={2} className={'w-2/3'} />
+            <div className='w-full p-10 flex sm:flex-col lg:flex-row justify-center mt-10'>
+                <div className='w-full flex items-start justify-center mb-20'>
+                    <Logo type={2} className={'sm:w-3/6 lg:w-2/3'} />
                 </div>
                 <div className='w-full flex items-center flex-col gap-10 text-primary'>
                     <h2 className='text-6xl tracking-wide font-semibold'>Connect with friends <br /> anywhere, anytime.</h2>

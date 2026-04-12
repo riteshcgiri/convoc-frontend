@@ -2,6 +2,7 @@ import { Phone, PhoneOff, Video } from "lucide-react";
 import useCallStore from "../../store/call.store";
 import { acceptCall, rejectCall } from "../../hooks/useCallManager";
 import { motion } from "framer-motion";
+import { stopAllSounds } from "../../hooks/useCallSocket";
 
 const IncomingCallPopup = () => {
   const { incomingCall, callStatus } = useCallStore();
@@ -11,7 +12,7 @@ const IncomingCallPopup = () => {
   const { callerName, callerAvatar, type } = incomingCall;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md">
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md">
       <div className="bg-base-100 rounded-2xl p-8 flex flex-col items-center gap-6 w-80 bg-white shadow-2xl">
 
         {/* Avatar */}
@@ -43,7 +44,7 @@ const IncomingCallPopup = () => {
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.92 }}
             transition={{ type: "spring", stiffness: 400, damping: 15 }}
-            onClick={acceptCall}
+            onClick={() => {acceptCall(); stopAllSounds()}}
             className="px-10 py-3 cursor-pointer flex items-center justify-center border-r border-white/20 hover:bg-white/10 text-white transition-colors duration-300">
             {type === "video" ? <Video size={24} className="text-white" /> : <Phone size={24} className="text-white" />}
           </motion.div>
@@ -53,7 +54,7 @@ const IncomingCallPopup = () => {
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.92 }}
             transition={{ type: "spring", stiffness: 400, damping: 15 }}
-            onClick={rejectCall}
+            onClick={() => {rejectCall(); stopAllSounds()}}
             className="px-10 py-3 cursor-pointer flex items-center justify-center hover:bg-white/10 transition-colors duration-300">
             <PhoneOff className="w-6 h-6 text-red-500" />
           </motion.div>

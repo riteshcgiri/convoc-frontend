@@ -16,6 +16,8 @@ const VideoAudio = ({ chat }) => {
     if (!otherUser) return
     startCall({
       targetUserId: otherUser._id,
+      targetUserName : otherUser.name,
+      targetUserAvatar : otherUser.avatar,
       chatId: chat._id,
       type: "audio",
       callerName: user.name,
@@ -27,6 +29,8 @@ const VideoAudio = ({ chat }) => {
     if (!otherUser) return
     startCall({
       targetUserId: otherUser._id,
+      targetUserName : otherUser.name,
+      targetUserAvatar : otherUser.avatar,
       chatId: chat._id,
       type: "video",
       callerName: user.name,

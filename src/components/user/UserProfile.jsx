@@ -92,11 +92,6 @@ const UserProfile = () => {
         console.log('verifying')
     }
 
-
-
-
-
-
     const inputFields = [
         {
             label: 'Full Name',
@@ -104,7 +99,7 @@ const UserProfile = () => {
             name: 'name',
             frontIcon: [],
             rearIcon: [],
-            style: ''
+            style: 'sm:col-span-2 lg:col-span-1'
         },
         {
             label: 'Username',
@@ -112,7 +107,7 @@ const UserProfile = () => {
             name: 'username',
             frontIcon: [],
             rearIcon: [],
-            style: ''
+            style: 'sm:col-span-2 lg:col-span-1'
         },
         {
             label: 'Email',

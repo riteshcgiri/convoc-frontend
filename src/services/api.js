@@ -3,7 +3,7 @@ import useAuthStore from "../store/auth.store";
 import useNotificationStore from "../store/notification.store";
 
 
-const api = axios.create({ baseURL: import.meta.env.VITE_API_BASE_URL, })
+const api = axios.create({ baseURL: import.meta.env.VITE_API_BASE_URL, headers : {"ngrok-skip-browser-warning": "true",} })
 
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem("token");

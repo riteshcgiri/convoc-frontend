@@ -46,33 +46,33 @@ const SignIn = () => {
     return (
         <div className='w-full p-10 '>
             <div className='w-full flex items-start justify-center'>
-                <Logo type={3} className={'w-3/12'} />
+                <Logo type={3} className={'lg:w-3/12 sm:w-4/6'} />
             </div>
 
-            <div className='w-2/5 mx-auto mt-5 '>
+            <div className='lg:w-2/5 sm:w-full mx-auto mt-5 '>
                 <h2 className=' text-2xl text-primary font-bold mb-5'>Welcome Back</h2>
                 <form onSubmit={handleSubmit(onSubmit)} className="w-full flex items-center justify-center flex-col gap-5 " autoComplete="off">
-                    {inputs.map(input => (
-                        <TextInput key={input.name} label={input.label} name={input.name} register={register} frontIcon={input?.frontIcon} rearIcon={input?.type === "password" && (<div onClick={() => setIsPassVisible(prev => !prev)}>{!isPassVisible ? <EyeOff className='w-5 h-5 text-primary absolute top-1/2 -left-2 -translate-x-1/2 -translate-y-1/2 cursor-pointer' /> : <Eye className='w-5 h-5 text-primary absolute top-1/2 -left-2 -translate-x-1/2 -translate-y-1/2 cursor-pointer' />}</div>)} parentClass={'hover:scale-[1.01] transition-all'} labelClass={''} inputClass={''} type={input.type === 'password' ? (isPassVisible ? 'text' : input.type) : input.type} error={errors[input.name]} />
+                    {inputs.map((input, i) => (
+                        <TextInput key={input.name} tabIndex={i+1} label={input.label} name={input.name} register={register} frontIcon={input?.frontIcon} rearIcon={input?.type === "password" && (<div onClick={() => setIsPassVisible(prev => !prev)}>{!isPassVisible ? <EyeOff className='w-5 h-5 text-primary absolute top-1/2 -left-2 -translate-x-1/2 -translate-y-1/2 cursor-pointer' /> : <Eye className='w-5 h-5 text-primary absolute top-1/2 -left-2 -translate-x-1/2 -translate-y-1/2 cursor-pointer' />}</div>)} parentClass={'hover:scale-[1.01] transition-all'} labelClass={''} inputClass={''} type={input.type === 'password' ? (isPassVisible ? 'text' : input.type) : input.type} error={errors[input.name]} />
                     ))}
                     <div className='flex justify-end w-full -mt-4'>
-                        <Link to={'/forget-password'} className='w-fit cursor-pointer transition-all hover:underline text-primary font-bold rounded-md disabled:bg-zinc-400 disabled:cursor-not-allowed'>Forget Password?</Link>
+                        <Link to={'/forget-password'} tabIndex={3} className='w-fit cursor-pointer transition-all hover:underline text-primary lg:text-sm sm:text-xl font-bold rounded-md disabled:bg-zinc-400 disabled:cursor-not-allowed'>Forget Password?</Link>
                     </div>
-                    <Button children={<div className='flex items-center justify-center relative'>{loading ? <LoaderCircle className={'animate-spin w-7 h-7'} /> : 'SIGN IN'}</div>} disabled={loading} className={'w-full cursor-pointer transition-all hover:scale-[1.01]  mx-auto px-10 py-3 bg-primary col-span-2 rounded-md disabled:bg-zinc-400 disabled:cursor-not-allowed text-white'} type={'submit'} />
+                    <Button tabIndex={4} children={<div className='flex items-center justify-center relative'>{loading ? <LoaderCircle className={'animate-spin lg:w-7 lg:h-7 sm:w-12 sm:h-12'} /> : 'SIGN IN'}</div>} disabled={loading} className={'w-full cursor-pointer transition-all hover:scale-[1.01]  mx-auto px-10 lg:py-4 sm:py-6 bg-primary col-span-2 rounded-md disabled:bg-zinc-400 disabled:cursor-not-allowed text-white lg:text-sm sm:text-2xl'} type={'submit'} />
                 </form>
             </div>
-            <div className='text-zinc-500 mt-5 flex gap-3 justify-center items-center'>
+            <div className='text-zinc-500 lg:my-5 sm:my-12 lg:text-sm sm:text-2xl flex gap-3 justify-center items-center'>
                 Don't have an account?
                 <Link to={'/signup'} className='text-primary font-bold hover:underline'>
                     JOIN NOW
                 </Link>
             </div>
-            <div className='w-3/5 mx-auto flex items-center gap-2 mt-5 text-zinc-400'>
+            <div className='lg:w-3/5 sm:w-full lg:text-sm sm:text-2xl mx-auto flex items-center gap-2 mt-5 text-zinc-400'>
                 <span className='w-full inline-block border-b border-zinc-400'></span>
                 OR
                 <span className='w-full inline-block border-b border-zinc-400'></span>
             </div>
-            <div className='w-3/5 flex mx-auto  mt-6 justify-center'>
+            <div className='w-3/5 flex mx-auto  lg:my-6 sm:my-12 lg:text-sm sm:text-2xl justify-center'>
                 <Button children={'SIGNIN WITH GOOGLE'} className={'w-fit cursor-pointer transition-all hover:scale-[1.01]  mx-auto font-semibold text-secondary col-span-2 rounded-md disabled:bg-zinc-400 disabled:cursor-not-allowed'} />
             </div>
 
