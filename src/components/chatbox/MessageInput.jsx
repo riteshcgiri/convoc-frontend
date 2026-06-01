@@ -251,7 +251,7 @@ const MessageInput = () => {
   }
 
   return (
-    <div className={`h-16 border-t border-zinc-300 relative bg-white px-6 flex gap-3 items-center ${isMobile && showEmoji ? "mb-[385px]" : ""}`}>
+    <div className={`h-16 border-t border-zinc-300 relative bg-white px-6 flex gap-3 items-center ${isMobile && showEmoji ? "mb-96.25" : ""}`}>
 
       <FilePreviewModal file={pendingFile} onCancel={() => setPendingFile(null)} onSend={handleSendFile} />
       {showEmoji && (
