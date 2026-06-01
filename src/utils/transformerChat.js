@@ -10,8 +10,8 @@ export const transformerChat = (chat, currentUser, onlineUsers = {}) => {
     name: chat.isGroupChat ? chat.chatName : otherUser?.name,
     lastMsg: chat.latestMessage
       ? chat.latestMessage.sender?._id?.toString() === currentUser?._id?.toString()
-        ? `You: ${chat.latestMessage.content}`
-        : chat.latestMessage.content
+        ? `You: ${chat.latestMessage?.content?.slice(0,25)}`
+        : chat.latestMessage?.content?.slice(0,20)
       : "No messages yet",
     lastMsgTime: formatTime(chat.latestMessage?.createdAt),
     src: chat.isGroupChat

@@ -22,10 +22,11 @@ const MessagesArea = ({ selectedAvatar, setSelectedAvatar, showAvatarPopup, setS
     const { sendFile } = useWebRTCStore()
     const { user } = useAuthStore();
     const messages = useChatStore((state) => state.messages);
-    const bottomRef = useRef(null);
     const { selectedChat } = useChatStore();
+    const containerRef = useRef(null)
 
     const getTargetUserId = () => {
+        if (!user?._id) return null
         return selectedChat?.users?.find(u => (u?._id || u)?.toString() !== user?._id?.toString())?._id
     }
 
@@ -76,31 +77,51 @@ const MessagesArea = ({ selectedAvatar, setSelectedAvatar, showAvatarPopup, setS
     }
 
 
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
 
+        el.scrollTop = el.scrollHeight;
+    }, [messages, containerRef]);
 
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+        const handleResize = () => {
+            const el = containerRef.current;
+            if (!el) return;
+            el.scrollTop = el.scrollHeight;
+        };
+
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
     }, [messages]);
 
 
+
+
+
     return (
-        <div className={`w-full h-full flex gap-2 flex-col p-5 relative overflow-x-hidden `} onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={handleDragOver} onDrop={handleDrop}>
+        <div
+            ref={containerRef}
+            className={`w-full h-full flex flex-col gap-2 px-3 py-3 sm:px-4 md:px-5 overflow-x-hidden overflow-y-auto  min-h-0 pb-4`}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}>
 
             <DragDropOverlay isDragging={isDragging} />
             <FilePreviewModal file={pendingFile} onCancel={() => setPendingFile(null)} onSend={handleSendFile} />
 
             {messages.map((msg, index) => (
-                <ChatBubble key={msg?._id} user={user} message={msg} chatUsers={selectedChat?.users || []} creator={selectedChat?.groupAdmin?.name || ''} />
+                <ChatBubble key={msg?._id || index} user={user} message={msg} chatUsers={selectedChat?.users || []} creator={selectedChat?.groupAdmin?.name || ''} />
             ))}
-            <div ref={bottomRef}></div>
 
             {showAvatarPopup &&
-                <div className="fixed left-1/2 top-1/2 -translate-1/2  w-3/6 backdrop-blur-sm z-50 flex items-center justify-center">
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
                     <GroupAvatarSelector selectedAvatar={selectedAvatar} setSelectedAvatar={setSelectedAvatar} setShowAvatarPopup={setShowAvatarPopup} cardClass='w-4/5' />
                 </div>
             }
             {showUpdateGroup &&
-                <div className="fixed left-1/2 top-1/2 -translate-1/2  w-full  z-50 flex items-center justify-center">
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
                     <UpdateGroup setShowUpdateGroup={setShowUpdateGroup} />
                 </div>
             }

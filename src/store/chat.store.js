@@ -18,6 +18,10 @@ const useChatStore = create((set, get) => ({
   editingMessage: null,
   selectMode: false,
   selectedMessages: [],
+  activePopupMsgId: null,
+
+  setActivePopup: (id) => set({ activePopupMessageId: id }),
+  clearActivePopup: () => set({ activePopupMessageId: null }),
 
   setShowChatProfile: () => {
     const { showChatProfile } = get()

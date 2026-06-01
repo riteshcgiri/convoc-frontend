@@ -21,6 +21,7 @@ const MessageInput = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [isInputEmpty, setIsInputEmpty] = useState(true)
   const [pendingFile, setPendingFile] = useState(null)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
 
   const { user } = useAuthStore()
   const { addNotification } = useNotificationStore();
@@ -139,6 +140,17 @@ const MessageInput = () => {
 
   }
 
+  const handleEmojiBtn = () => {
+    if (showEmoji) {
+      inputRef.current?.focus()
+      setShowEmoji(false)
+    } else {
+      inputRef.current?.blur()
+      setShowEmoji(true)
+    }
+
+  }
+
 
   const menuOptions = [
     {
@@ -221,6 +233,11 @@ const MessageInput = () => {
     }
   }, [replyTo, editMessage])
 
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
 
 
@@ -234,12 +251,12 @@ const MessageInput = () => {
   }
 
   return (
-    <div className="h-16 border-t border-zinc-300 relative bg-white px-6 flex gap-3 items-center ">
+    <div className={`h-16 border-t border-zinc-300 relative bg-white px-6 flex gap-3 items-center ${isMobile && showEmoji ? "mb-[385px]" : ""}`}>
 
       <FilePreviewModal file={pendingFile} onCancel={() => setPendingFile(null)} onSend={handleSendFile} />
       {showEmoji && (
-        <div className="absolute bottom-16 z-10">
-          <EmojiPicker className="" height={400} previewConfig={{ showPreview: false }} autoFocusSearch={false} emojiStyle="facebook" onEmojiClick={handleEmojiClick} />
+        <div className={`${isMobile ? 'fixed bottom-0 left-0 w-full' : 'absolute bottom-16'}    outline-hidden z-50 bg-white border-t border-zinc-100 `}>
+          <EmojiPicker className="" width={isMobile ? '' : 350} height={isMobile ? 400 : 400} previewConfig={{ showPreview: false }} autoFocusSearch={false} emojiStyle="facebook" onEmojiClick={handleEmojiClick} />
         </div>
       )}
       {showPopup && <div ref={popupRef}> <ChatSharePopup options={menuOptions} className="left-0 bottom-16" /> </div>}
@@ -271,9 +288,9 @@ const MessageInput = () => {
         <div className="w-full relative flex">
           <div className="flex absolute gap-1 outline-hidden">
             <Button children={<Plus className="w-6 h-6 scale-90" />} handleClick={() => setShowPopup(!showPopup)} className="p-2  rounded-full text-primary cursor-pointer focus:bg-primary/20 hover:bg-primary/20 hover:outline-primary focus:outline-primary" />
-            <Button children={<Smile className="w-6 h-6" />} handleClick={() => setShowEmoji(!showEmoji)} className=" p-2 rounded-full text-primary cursor-pointer focus:bg-primary/20 hover:bg-primary/20 hover:outline-primary focus:outline-primary" />
+            <Button children={<Smile className="w-6 h-6" />} handleClick={handleEmojiBtn} className=" p-2 rounded-full text-primary cursor-pointer focus:bg-primary/20 hover:bg-primary/20 hover:outline-primary focus:outline-primary" />
           </div>
-          <input type="text" {...register("message")} ref={(e) => { register("message").ref(e); inputRef.current = e; }} id="message" placeholder="Tpye Message..." className="text-sm px-22 text-primary placeholder:text-primary placeholder:text-xs placeholder:tracking-wide py-2.5 rounded-full border-none outline-1 hover:outline-2 focus:outline-2  outline-primary  w-full" autoComplete="off" />
+          <input type="text" {...register("message")} ref={(e) => { register("message").ref(e); inputRef.current = e; }} id="message" placeholder="Tpye Message..." className="text-sm ps-22 pe-5 text-primary placeholder:text-primary placeholder:text-xs placeholder:tracking-wide py-2.5 rounded-full border-none outline-1 hover:outline-2 focus:outline-2  outline-primary  w-full" autoComplete="off" autoCorrect="off" autoComplete="new-password" autoComplete="one-time-code" autoCapitalize="off" spellCheck={false} />
         </div>
 
         <Button children={isInputEmpty ? <Mic className="w-5 h-5" /> : <MousePointer2 className="w-5 h-5 rotate-90" />} className="p-3  rounded-full text-white cursor-pointer bg-primary  hover:outline-primary " type={'submit'} />

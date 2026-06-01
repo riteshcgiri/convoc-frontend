@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { Ban, Bell, ChevronDown, Dot, EllipsisVertical, Plus, ThumbsDown, Trash2, User, LoaderCircle, X, LinkIcon, Check, ImagePlay, ImagePlus, Bolt, Pencil, Image } from 'lucide-react'
+import { Ban, Bell, ChevronDown, Dot, EllipsisVertical, Plus, ThumbsDown, Trash2, User, LoaderCircle, X, LinkIcon, Check, ImagePlay, ImagePlus, Bolt, Pencil, Image, ChevronLeft } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import VideoAudio from './VideoAudio';
 import AboutFormatter from '../AboutFormatter';
@@ -120,54 +120,65 @@ const ChatProfile = ({ onProfileClick, showAvatarPopup, setShowAvatarPopup, avat
     return () => subscription.unsubscribe()
   }, [watch, selectedChat._id])
 
+
+
   const popupRef = useRef(null);
   useClickOutside(popupRef, () => setShowMemberPopup(false));
 
   return (
-    <div className={`w-80 h-full border-l border-zinc-200 bg-white  relative ${showAvatarPopup ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+    <div className={`fixed md:relative inset-0 md:inset-auto z-10 md:z-auto w-full md:w-80 h-full md:border-l border-zinc-200 bg-white  ${showAvatarPopup ? 'overflow-hidden' : 'overflow-y-auto'}`}>
       {showMedia ? <MediaGallery chatId={selectedChat?._id} onClose={() => setShowMedia(false)} /> :
         <>
           <div className='w-full relative text-white'>
-            <div className='z-2 flex items-start justify-between p-5 relative top-0 bg-zinc-400/50'>
-              <h2 className='text-lg'>Contact Information</h2>
-              <X onClick={onProfileClick} className='cursor-pointer' />
+            <div className='z-2 flex items-start justify-between px-4 py-5 md:p-5 relative top-0 bg-primary '>
+              {<ChevronLeft strokeWidth={1.5} className='cursor-pointer absolute left-3 md:left-5' onClick={onProfileClick} />}
+              <h2 className='text-lg flex-1 text-center'>Contact Information</h2>
             </div>
-            <div className='absolute top-0 left-0'>
+            <div className='hidden md:block absolute top-0 left-0'>
               {isBannerLink &&
                 <img src={chatUI.banner} alt={chatUI.name} draggable={false} className='w-full' />
               }
 
             </div>
           </div>
+
           <div className='p-5'>
             {/* avatar */}
-            <div className='flex flex-col items-center gap-3 mt-10 relative'>
+            <div className='flex md:flex-col md:items-center gap-5 md:gap-3 mt-5 md:mt-10 relative'>
 
-              <div className={` w-50 h-50 ring-2  ring-offset-2 rounded-full flex items-center justify-center relative ${chatUI.isActive ? 'ring-green-400' : 'ring-blue-400'} ${chatUI.src.trim() ? '' : 'bg-blue-100'}`}>
+              <div className={` w-32 h-32 sm:w-36 sm:h-36 md:w-50 md:h-50 ring-2  ring-offset-2 rounded-full flex items-center justify-center relative ${chatUI.isActive ? 'ring-green-400' : 'ring-blue-400'} ${chatUI.src.trim() ? '' : 'bg-blue-100'}`}>
                 {chatUI.src.trim() ? <img src={chatUI.src} draggable={false} alt={chatUI.name} className='w-full h-full object-cover rounded-full z-1' /> : <User className='w-52 h-52 text-blue-500' strokeWidth={1} />}
-                {canEdit && <div onClick={() => setShowAvatarPopup(true)} className={` absolute right-4 bottom-4 z-3 bg-white p-2 rounded-full shadow-md cursor-pointer ring-1 ring-offset-1 ${chatUI.isActive ? 'ring-green-400 text-green-500' : 'ring-blue-400 text-blue-500'}`}>
+                {canEdit && <div onClick={() => setShowAvatarPopup(true)} className={` absolute right-0 bottom-0 md:right-4 md:bottom-4 z-3 bg-white p-2 rounded-full shadow-md cursor-pointer ring-1 ring-offset-1 ${chatUI.isActive ? 'ring-green-400 text-green-500' : 'ring-blue-400 text-blue-500'}`}>
                   <ImagePlus className='h-4 w-4 ' />
                 </div>}
                 {avatarLoading && <div className='absolute z-2 w-full h-full flex items-center justify-center bg-zinc-200/70 rounded-full text-primary'>
                   <LoaderCircle className='animate-spin w-10 h-10' strokeWidth={1.2} />
                 </div>}
               </div>
-              <div className='text-primary mt-3 text-center'>
+              <div className='text-primary mt-3 md:text-center'>
                 <h2 className='text-2xl font-bold'>{chatUI.name}</h2>
-                {!isGroup && <h3 className='text-zinc-400 text-xs'>@{chatUI.username}</h3>}
-                {
-                  isGroup ?
-                    <h2 className='text-xs text-zinc-400'>{chatUI.createdAt}</h2>
+                <div className=''>
+                  {!isGroup && <h3 className='text-zinc-400 text-sm md:text-xs'>@{chatUI.username}</h3>}
+                  {/* <Dot className='text-zinc-200' /> */}
+                  {isGroup ?
+                    <h2 className='text-sm md:text-xs text-zinc-400'>{chatUI.createdAt}</h2>
                     :
-                    <h2 className={`text-xs mt-1 ${chatUI.isActive ? 'text-green-500' : 'text-zinc-400'}`}>{chatUI.isActive ? 'Online' : 'Offline'}</h2>
-                }
-              </div>
-              <div className='flex gap-2 flex-col'>
-                {canEdit && <h2 className='text-center gap-4 bg-linear-to-r from-primary to-secondary px-10 text-white py-2.5 rounded-full cursor-pointer' onClick={() => setShowUpdateGroup(true)}>Edit</h2>}
-                <VideoAudio chat={selectedChat} />
+                    <h2 className={`text-xs mt-1 ${chatUI.isActive ? 'text-green-500' : 'text-zinc-400'}`}>{chatUI.isActive ? 'Online' : 'Offline'}</h2>}
+                </div>
+                <div className='flex gap-2 flex-col mt-3'>
+                  {canEdit && <h2 className='text-center w-fit md:w-full gap-4 bg-linear-to-r from-primary to-secondary px-10 text-white py-2.5 rounded-md  cursor-pointer' onClick={() => setShowUpdateGroup(true)}>Edit</h2>}
+                </div>
+                <div className='w-fit mt-3'>
+                  <VideoAudio chat={selectedChat} />
+
+                </div>
               </div>
 
-              <div className='w-full text-xs mt-4 text-zinc-400'>
+            </div>
+            <div className='flex flex-col items-center justify-center mt-5'>
+
+
+              <div className='w-full text-[11px] sm:text-xs mt-4 text-zinc-400'>
                 <h2 className='mb-5'>About</h2>
 
                 {chatUI.about ?
@@ -183,8 +194,8 @@ const ChatProfile = ({ onProfileClick, showAvatarPopup, setShowAvatarPopup, avat
               <div className='flex w-full justify-between text-xs text-zinc-400 px-2'> <h2>Media & Link</h2><h3>23</h3> </div>
               <div className='grid grid-cols-3 gap-0.5 py-2'>
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className='hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center bg-zinc-200 h-24 text-zinc-500'>
-                    <Image className='w-10 h-10 ' strokeWidth={1}/>
+                  <div key={i} className='hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center bg-zinc-200 h-30 sm:h-20 md:h-24 text-zinc-500'>
+                    <Image className='w-10 h-10 ' strokeWidth={1} />
                   </div>
                 ))}
               </div>
@@ -229,7 +240,7 @@ const ChatProfile = ({ onProfileClick, showAvatarPopup, setShowAvatarPopup, avat
                   </div>
                 )}
 
-                <div className={`transition-all duration-150`}>
+                <div className={`transition-all duration-150 select-none`}>
                   {isGroup && members.map((member) =>
                     <div key={member._id} className='flex items-center cursor-pointer gap-3 p-2 hover:bg-zinc-200 transition-all duration-200 rounded-md group relative' onContextMenu={(e) => { e.preventDefault(); handleMemberMenu(e, member) }}>
                       <div className='w-10 h-10'>
@@ -243,7 +254,7 @@ const ChatProfile = ({ onProfileClick, showAvatarPopup, setShowAvatarPopup, avat
 
                       </div>
                       <div className='flex-1 text-zinc-400 text-xs'>
-                        <h2 className='text-sm text-primary'>{member.name}</h2>
+                        <h2 className='text-sm text-primary truncate'>{member.name}</h2>
                         <div className='flex items-center text-[10px]'>
                           <span>{chatUI.createdAt}</span>
                           <Dot />
@@ -263,11 +274,11 @@ const ChatProfile = ({ onProfileClick, showAvatarPopup, setShowAvatarPopup, avat
               </div>
             }
             <div className='flex justify-between items-center'>
-              <div className='flex gap-2 text-sm text-primary font-medium'>
+              <div className='flex items-center gap-2 text-lg md:text-sm text-primary font-medium'>
                 <Bell className='w-5 h-5' />
                 <h2>Mute Notifications</h2>
               </div>
-              <Switch control={control} name={'chatNotification'} parentClass='scale-60' />
+              <Switch control={control} name={'chatNotification'} parentClass='scale-75 sm:scale-60' />
             </div>
             <div className='text-red-500 mt-5 flex flex-col gap-1'>
               {userAgainstAction.map(action =>

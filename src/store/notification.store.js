@@ -6,7 +6,7 @@ const MAX_VISIBLE = 3;
 
 
 const useNotificationStore = create((set) => ({
-    notifications : [{id : 1, type : 'info', message : 'Hello this is message', duration : 5000}],
+    notifications : [{id : 1, type : 'info', message : 'Welcome to CONVOC, Share & Enjoy.', duration : 5000}],
     position : 'bottom-right',
 
     addNotification : (type, message, duration=5000) => {

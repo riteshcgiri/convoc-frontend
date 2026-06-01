@@ -1,5 +1,6 @@
 import useCallStore from '../store/call.store'
 import { handleCallAnswer, handleIceCandidate } from './useCallManager'
+import useCallLogStore from '../store/callLogs.store'
 
 
 let ringtoneActive = false
@@ -12,21 +13,21 @@ const ringbackAudio = new Audio("/sounds/ring_sound.mp3")
 ringbackAudio.volume = 0.3
 
 ringtoneAudio.addEventListener('ended', () => {
-    console.log("ringtone ended, ringtoneActive:", ringtoneActive)
+    // console.log("ringtone ended, ringtoneActive:", ringtoneActive)
     if (ringtoneActive) {
         ringtoneAudio.currentTime = 0
         ringtoneAudio.play()
-            .then(() => console.log("ringtone replayed"))
+            .then(() => { })
             .catch(e => console.log("ringtone replay failed:", e))
     }
 })
 
 ringbackAudio.addEventListener('ended', () => {
-    console.log("ringback ended, ringbackActive:", ringbackActive)
+    // console.log("ringback ended, ringbackActive:", ringbackActive)
     if (ringbackActive) {
         ringbackAudio.currentTime = 0
         ringbackAudio.play()
-            .then(() => console.log("ringback replayed"))
+            .then(() => { })
             .catch(e => console.log("ringback replay failed:", e))
     }
 })
@@ -34,14 +35,14 @@ const playRingtone = () => {
     ringtoneActive = true
     ringtoneAudio.currentTime = 0
     ringtoneAudio.play().catch(() => { })
-    console.log("ringtone volume:", ringtoneAudio.volume)
+    // console.log("ringtone volume:", ringtoneAudio.volume)
 }
 
 const playRingback = () => {
     ringbackActive = true
     ringbackAudio.currentTime = 0
     ringbackAudio.play().catch(() => { })
-    console.log("ringback volume:", ringbackAudio.volume)
+    // console.log("ringback volume:", ringbackAudio.volume)
 }
 
 
@@ -90,6 +91,7 @@ export const attachCallSocketListners = (socket) => {
     })
 
     socket.on("call_ice_candidate", ({ candidate, userId }) => {
+        // console.log("📥 received ICE candidate from:", userId)
         handleIceCandidate({ candidate, userId })
     })
 
@@ -97,6 +99,9 @@ export const attachCallSocketListners = (socket) => {
         stopAllSounds()
         useCallStore.getState().endCall();
     });
+    socket.on("call_log_added", (log) => {
+        useCallLogStore.getState().addCallLog(log)
+    })
 
 }
 

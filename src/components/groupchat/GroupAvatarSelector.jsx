@@ -52,16 +52,18 @@ const GroupAvatarSelector = ({ setSelectedAvatar, setShowAvatarPopup, cardClass=
     }
 
     return (
-        <div className='w-full h-full backdrop-blur-md absolute z-10 top-1/2 left-1/2 -translate-1/2'>
-            <div className={`w-2/4 shadow-2xl rounded-lg bg-white absolute top-1/2 left-1/2 -translate-1/2 p-5 ${cardClass}`}>
+        <div className='fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md px-4'>
+            <div className={`w-full max-w-md sm:max-w-md md:max-w-lg shadow-2xl rounded-lg bg-white p-4 sm:p-5 ${cardClass}`}>
                 <div className='flex justify-end'>
-                    <X className='w-5 h-5 text-zinc-400 cursor-pointer' strokeWidth={1.1} onClick={() => setShowAvatarPopup(false)} />
+                    <div className='p-2 bg-primary/20 rounded-md'>
+                        <X className='w-5 h-5 text-zinc-400 cursor-pointer' strokeWidth={1.9} onClick={() => setShowAvatarPopup(false)} />
+                    </div>
                 </div>
                 <div className='flex items-center justify-center text-lg font-medium text-primary'>
-                    <h2>Upload Group Avatar</h2>
+                    <h2 className='font-bold'>Upload Group Avatar</h2>
                 </div>
                 <div className='mt-5 flex flex-col gap-5'>
-                    <div className='w-3/5 mx-auto ' >
+                    <div className='w-full max-w-sm mx-auto ' >
                         <label htmlFor="groupAvatar" className='w-full py-4 flex items-center  gap-3 ring-[1.5px] text-zinc-300 justify-center rounded-md cursor-not-allowed' title='currently Unavailable'>
                             <Upload className='w-10 h-10' strokeWidth={1.1} />
                             <div>
@@ -76,7 +78,7 @@ const GroupAvatarSelector = ({ setSelectedAvatar, setShowAvatarPopup, cardClass=
                         <span>OR</span>
                         <span className='w-full border-b border-zinc-300'></span>
                     </div>
-                    <div className='w-3/5 mx-auto flex flex-col gap-2 justify-center mb-5'>
+                    <div className='w-full max-w-sm mx-auto flex flex-col gap-2 justify-center mb-5'>
                         <div className="relative w-full">
                             <label htmlFor="groupAvatar" className="select-none rounded-md absolute -top-2 font-semibold tracking-wide left-4 bg-white px-2 text-sm text-primary z-10">
                                 {wordPrettier("Search Avatar")}
@@ -95,9 +97,9 @@ const GroupAvatarSelector = ({ setSelectedAvatar, setShowAvatarPopup, cardClass=
 
                             </div>
                         </div>
-                        {avatarResults.length > 0 && <div>
-                            <h2 className='text-xs text-zinc-400 '>Select Image</h2>
-                            <div className='flex flex-wrap justify-evenly gap-2' >
+                        {avatarResults.length > 0 && <div className='w-5/6 mx-auto'>
+                            <h2 className='text-xs text-zinc-400 mb-2'>Select Image</h2>
+                            <div className='grid grid-cols-4 justify-start gap-2' >
                                 {avatarResults?.map(img => (
                                     <div key={img?.id} className='flex w-16 h-16 cursor-pointer hover:scale-200 transition-all duration-100' onClick={() => handleSelectImg(img?.urls?.small)}>
                                         <img src={img?.urls?.small} alt="" className='w-full h-full object-cover rounded-md' />

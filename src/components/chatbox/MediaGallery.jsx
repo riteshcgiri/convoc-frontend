@@ -503,7 +503,7 @@ const MediaGallery = ({ chatId, onClose }) => {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 px-5 py-3 border-b border-zinc-100 shrink-0">
+            <div className="flex justify-between gap-1 px-5 py-3 border-b border-zinc-100 shrink-0">
                 {tabs.map(tab => (
                     <motion.button
                         key={tab.id}

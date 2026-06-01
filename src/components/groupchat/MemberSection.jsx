@@ -29,7 +29,7 @@ const sectionVariants = {
 
 const DEBOUNCE_DELAY = 600;
 
-const MemberSection = ({ selectedUsers, setSelectedUsers, error }) => {
+const MemberSection = ({ selectedUsers, setSelectedUsers, error, parentClass='' }) => {
     const [searching, setSearching] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [userResult, setUsersResult] = useState([]);
@@ -82,7 +82,7 @@ const MemberSection = ({ selectedUsers, setSelectedUsers, error }) => {
     );
 
     return (
-        <div className="col-span-2 bg-primary/10 rounded-xl">
+        <div className={`col-span-2 bg-primary/10 rounded-xl ${parentClass}`}>
             {/* Search Input */}
             <div className="relative w-full">
                 <label htmlFor="members" className="select-none rounded-md absolute -top-2 font-semibold tracking-wide left-4 bg-white px-2 text-sm text-primary z-10">

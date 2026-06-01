@@ -1,11 +1,9 @@
-
 import { useForm } from 'react-hook-form'
 import { signupSchema } from '../../schemas/signup.schema'
 import { zodResolver } from "@hookform/resolvers/zod";
 import Logo from '../../components/Logo/Logo'
-import Navbar from '../../components/nav/Navbar'
 import TextInput from '../../components/Inputs/TextInput'
-import {Eye, EyeOff} from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import { useEffect, useState } from 'react';
 import Button from '../../components/Inputs/Button';
 import RadioInput from '../../components/Inputs/RadioInput';
@@ -15,7 +13,7 @@ import { LoaderCircle } from 'lucide-react';
 
 
 const SignUp = () => {
-    const { register,handleSubmit, watch, formState: { errors } } = useForm({ resolver: zodResolver(signupSchema), });
+    const { register, handleSubmit, watch, formState: { errors } } = useForm({ resolver: zodResolver(signupSchema) });
     const [isPassVisible, setIsPassVisible] = useState(false)
     const { signup, loading, error, clearError } = useAuthStore()
     const isTncChecked = watch("tnc");
@@ -24,13 +22,12 @@ const SignUp = () => {
     const onSubmit = (data) => {
         if (loading) return;
         signup(data, navigate)
-        
-    } 
-
+    }
 
     useEffect(() => {
         clearError();
-    },[])
+    }, [])
+
     const inputs = [
         {
             label: 'Full Name',
@@ -51,49 +48,91 @@ const SignUp = () => {
             name: 'password',
             type: 'password',
             frontIcon: [],
-            rearIcon: [<Eye className='lg:w-5 lg:h-5 sm:w-8 sm:h-8 text-primary absolute top-1/2 -left-2 -translate-x-1/2 -translate-y-1/2 cursor-pointer' onClick={() => setIsPassVisible(prev => !prev)} />, <EyeOff className='lg:w-5 lg:h-5 sm:w-8 sm:h-8 text-primary absolute top-1/2 -left-2 -translate-x-1/2 -translate-y-1/2 cursor-pointer' onClick={() => setIsPassVisible(prev => !prev)} />],
+            rearIcon: [
+                <Eye className='w-4 h-4 md:w-5 md:h-5 text-primary absolute top-1/2 -left-2 -translate-x-1/2 -translate-y-1/2 cursor-pointer' onClick={() => setIsPassVisible(prev => !prev)} />,
+                <EyeOff className='w-4 h-4 md:w-5 md:h-5 text-primary absolute top-1/2 -left-2 -translate-x-1/2 -translate-y-1/2 cursor-pointer' onClick={() => setIsPassVisible(prev => !prev)} />
+            ],
         },
         {
             label: 'Phone',
             name: 'phone',
             type: 'number',
-            frontIcon: [<div key={'+91'} className='text-primary sm:text-3xl lg:text-sm mr-2'>+91</div>],
+            frontIcon: [
+                <div key='+91' className='text-primary text-sm md:text-base mr-2'>+91</div>
+            ],
             rearIcon: [],
         },
     ]
 
     return (
-        <div className='w-full p-10 '>
-                <div className='w-full flex items-start justify-center my-10'>
-                    <Logo type={3} className={'sm:w-3/6 lg:w-3/12'} />
-                </div>
-                <div className='sm:w-5/6 lg:w-3/6 mx-auto mt-5 '>
-                
-                    <h2 className='sm:text-4xl lg:text-2xl text-primary font-bold mb-5'>Create Account</h2>
-                    <form onSubmit={handleSubmit(onSubmit)} className="w-full lg:max-w-3xl sm:flex sm:flex-col lg:grid lg:grid-cols-2 gap-5" autoComplete="off">
-                        {inputs.map(input => (
-                                <TextInput key={input.name} label={input.label} name={input.name} register={register} frontIcon={input?.frontIcon} rearIcon={isPassVisible ? input?.rearIcon[0] : input?.rearIcon[1]} parentClass={'hover:scale-[1.01] transition-all'} labelClass={''} inputClass={''} type={input.type === 'password' ? (isPassVisible ? 'text' : input.type ) : input.type} error={errors[input.name]} />
-                        ))}
-                        <RadioInput parentClass={'lg:col-span-2'} name={'tnc'} type={'hidden'} label={<>By tapping Submit, you agree to create an account and to <Link className='text-blue-600' to={'/'}>Terms</Link>  & <Link className='text-blue-600' to={'/'}>Privacy Policies</Link>.</>} register={register} />                    
-                        <Button children={<div className='flex items-center justify-center relative'>{loading ? <LoaderCircle className={'animate-spin lg:w-7 lg:h-7 sm:w-12 sm:h-12'} /> : 'SIGN UP'}</div>} className={'w-full cursor-pointer transition-all hover:scale-[1.01]  mx-auto px-10 lg:py-4 sm:py-6 bg-primary col-span-2 rounded-md disabled:bg-zinc-400 disabled:cursor-not-allowed text-white sm:text-2xl lg:text-sm'} disabled={!isTncChecked} type={'submit'} />
-                    </form>    
-                </div>
-                <div className='text-zinc-500 sm:mt-10 lg:mt-5 mb-3 flex gap-3 justify-center items-center sm:text-2xl lg:text-sm'>
-                    Already have an account? 
-                    <Link to={'/signin'} className='text-primary font-bold  hover:underline'>
-                      SIGN IN
-                    </Link>
-                </div>
-                {/* <div className='lg:w-3/5 sm:w-full mx-auto flex items-center gap-2 mt-5 text-zinc-400 sm:text-2xl lg:text-sm'>
-                    <span className='w-full inline-block border-b border-zinc-400'></span>
-                    OR
-                    <span className='w-full inline-block border-b border-zinc-400'></span>
-                </div> */}
-                {/* <div className='w-3/5 flex mx-auto  mt-5 justify-center'>
-                    <Button children={'SIGNIN WITH GOOGLE'} className={'w-fit cursor-pointer transition-all hover:scale-[1.01]  mx-auto font-semibold text-secondary col-span-2 rounded-md disabled:bg-zinc-400 disabled:cursor-not-allowed'} />
-                </div> */}
+        <div className='w-full px-2 py-6 md:p-10'>
 
+            {/* Logo */}
+            <div className='w-full flex items-start justify-center my-6 md:my-10'>
+                <Logo type={4} className='w-3/5 sm:w-1/4 md:w-1/5 lg:w-3/12' />
             </div>
+
+            {/* Form container */}
+            <div className='w-full sm:w-5/6 md:w-4/6 lg:w-3/6 mx-auto mt-5'>
+
+                <h2 className='text-xl md:text-2xl text-primary font-bold mb-5 px-10 md:px-0'>Create Account</h2>
+
+                <form onSubmit={handleSubmit(onSubmit)} className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 px-10 md:px-0 md:gap-5" autoComplete="off" >
+                    {inputs.map(input => (
+                        <TextInput
+                            key={input.name}
+                            label={input.label}
+                            name={input.name}
+                            register={register}
+                            frontIcon={input?.frontIcon}
+                            rearIcon={isPassVisible ? input?.rearIcon[0] : input?.rearIcon[1]}
+                            parentClass='hover:scale-[1.01] transition-all'
+                            labelClass=''
+                            inputClass=''
+                            type={input.type === 'password' ? (isPassVisible ? 'text' : input.type) : input.type}
+                            error={errors[input.name]}
+                        />
+                    ))}
+
+                    <RadioInput
+                        parentClass='md:col-span-2'
+                        name='tnc'
+                        type='hidden'
+                        label={
+                            <>
+                                By tapping Submit, you agree to create an account and to{' '}
+                                <Link className='text-blue-600' to='/'>Terms</Link> &{' '}
+                                <Link className='text-blue-600' to='/'>Privacy Policies</Link>.
+                            </>
+                        }
+                        register={register}
+                    />
+
+                    <Button
+                        children={
+                            <div className='flex items-center justify-center'>
+                                {loading
+                                    ? <LoaderCircle className='animate-spin w-5 h-5 md:w-7 md:h-7' />
+                                    : 'SIGN UP'
+                                }
+                            </div>
+                        }
+                        className='w-full cursor-pointer transition-all hover:scale-[1.01] mx-auto px-10 py-3 md:py-4 bg-primary md:col-span-2 rounded-md disabled:bg-zinc-400 disabled:cursor-not-allowed text-white text-sm md:text-base'
+                        disabled={!isTncChecked}
+                        type='submit'
+                    />
+                </form>
+            </div>
+
+            {/* Sign in link */}
+            <div className='text-zinc-500 mt-6 md:mt-5 mb-3 flex gap-3 justify-center items-center text-sm md:text-base'>
+                Already have an account?
+                <Link to='/signin' className='text-primary font-bold hover:underline'>
+                    SIGN IN
+                </Link>
+            </div>
+
+        </div>
     )
 }
 

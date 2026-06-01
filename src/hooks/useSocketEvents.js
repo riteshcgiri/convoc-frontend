@@ -1,11 +1,13 @@
 import { useEffect } from "react";
 import { onSocketReady, getSocket } from "../services/socket";
+import { attachCallSocketListners } from "./useCallSocket";
+
 import useChatStore from "../store/chat.store";
 import useAuthStore from "../store/auth.store";
+import useCallStore from "../store/call.store"
 import api from "../services/api";
 import useNotificationSound from "./useNotificationSound";
 import { registerPushNotifications } from '../services/pushNotification'
-import { attachCallSocketListners } from "./useCallSocket";
 
 
 const useSocketEvents = () => {
@@ -158,6 +160,16 @@ const useSocketEvents = () => {
       if (selected?._id) {
         socket.emit("join_chat", selected._id);
       }
+
+      window.addEventListener("beforeunload", () => {
+        const { activeCall, peerConnections } = useCallStore.getState()
+        if (!activeCall) return
+        const socket = getSocket()
+        Object.keys(peerConnections).forEach(userId => {
+          socket.emit("call_ended", { targetUserId: userId })
+        })
+      })
+
     };
 
     onSocketReady((socket) => {

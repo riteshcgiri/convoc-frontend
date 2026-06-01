@@ -58,8 +58,8 @@ const AccountActionPopup = ({actionType = 'disable', setShowActionPopup }) => {
     }, [confirmation])
 
   return (
-    <div className='w-full h-full absolute top-0 left-0 backdrop-blur-sm bg-primary/10 flex items-center justify-center z-10'>
-       <div className='w-3/12 bg-white p-10 shadow-xl rounded-lg   '>
+    <div className='w-full h-full absolute top-0 left-0 backdrop-blur-sm bg-primary/10 flex items-center justify-center px-2 z-10'>
+       <div className='w-full md:w-3/12 bg-white p-10 shadow-xl rounded-lg   '>
          <h2 className='text-xl mb-3 text-red-500'>{head.heading}</h2>
         {head.pera}
         <div className={`mb-5 `}>

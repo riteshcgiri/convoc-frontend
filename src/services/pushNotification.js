@@ -12,14 +12,14 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 export const registerPushNotifications = async () => {
-  console.log("registerPushNotifications called");
+  // console.log("registerPushNotifications called");
   if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-    console.log("Push not supported");
+    // console.log("Push not supported");
     return;
   }
 
   const permission = await Notification.requestPermission();
-  console.log("Notification permission:", permission);
+  // console.log("Notification permission:", permission);
   if (permission !== "granted") return;
 
   // ── unregister any stale sw first ──────────────────────────────
@@ -39,7 +39,7 @@ export const registerPushNotifications = async () => {
   });
   // ──────────────────────────────────────────────────────────────
 
-  console.log("SW active, subscribing...");
+  // console.log("SW active, subscribing...");
 
   const existingSub = await registration.pushManager.getSubscription();
   if (existingSub) await existingSub.unsubscribe();
@@ -50,14 +50,14 @@ export const registerPushNotifications = async () => {
       applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY),
     });
 
-    console.log("Subscribed:", subscription.endpoint);
+    // console.log("Subscribed:", subscription.endpoint);
 
     const { endpoint, keys } = subscription.toJSON();
     const res = await api.post("/auth/push-subscription", { endpoint, keys });
-    console.log("Subscription saved to DB:", res.data);
+    // console.log("Subscription saved to DB:", res.data);
 
   } catch (err) {
-    console.log("Subscribe error:", err.message);
+    // console.log("Subscribe error:", err.message);
   }
 };
 export const unregisterPushNotifications = async () => {

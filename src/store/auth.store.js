@@ -238,12 +238,6 @@ const useAuthStore = create((set, get) => ({
 
 
 
-
-
-
-
-
-
     logout: async (navigate) => {
         try {
             await api.post(`${API_URL}/logout`)

@@ -99,7 +99,7 @@ const UserProfile = () => {
             name: 'name',
             frontIcon: [],
             rearIcon: [],
-            style: 'sm:col-span-2 lg:col-span-1'
+            style: 'col-span-2 md:col-span-1'
         },
         {
             label: 'Username',
@@ -107,7 +107,7 @@ const UserProfile = () => {
             name: 'username',
             frontIcon: [],
             rearIcon: [],
-            style: 'sm:col-span-2 lg:col-span-1'
+            style: 'col-span-2 md:col-span-1'
         },
         {
             label: 'Email',
@@ -233,48 +233,52 @@ const UserProfile = () => {
     }, [username])
 
     return (
-        <div className='flex-1 h-full overflow-y-auto bg-white'>
-            <div className='bg-primary/10 h-52 flex flex-col justify-between relative'>
+        <div className='flex-1 overflow-y-auto bg-white'>
+            <div className='bg-primary/10 h-36 sm:h-44 md:h-52 flex flex-col justify-between relative'>
                 {/* Banner */}
                 <div className='w-full h-full absolute bg-linear-to-r from-primary to-secondary top-0 left-0'>
                     {isPosterALink && <img src={user?.poster} className='h-full w-full object-cover' alt={user?.name} />}
                 </div>
                 {/* Group Heading & Close Button */}
                 <div className='flex items-center justify-between px-5 py-3 z-2 text-white'>
-                    <h2 className=' font-bold text-xl'>UPDATE PROFILE</h2>
+                    <h2 className=' font-bold text-lg md:text-xl'>UPDATE PROFILE</h2>
                     <div className='hover:bg-primary/30 transition-all cursor-pointer p-2 rounded-md' onClick={() => navigate('/chat')}>
                         <X />
                     </div>
                 </div>
                 {/* Banner Editor */}
                 <div className='flex justify-end px-5 py-3 z-2' >
-                    <div className=' rounded-full cursor-pointer group p-2 bg-white text-primary'>
+                    <div className=' rounded-full cursor-pointer group p-2 md:p-2.5 bg-white text-primary'>
                         <PaintRoller className='group-hover:scale-110' strokeWidth={1.5} />
                     </div>
                 </div>
             </div>
             {/* Avatar Box */}
-            <div className='relative h-40'>
-                <div className='w-60 h-60 rounded-full absolute left-1/2 -translate-x-1/2 -top-32'>
+            <div className='relative h-28 sm:h-32 md:h-40'>
+                <div className='w-32 h-32 sm:w-40 sm:h-40 md:w-60 md:h-60 rounded-full absolute left-1/2 -translate-x-1/2 -top-16 sm:-top-20 md:-top-32'>
                     <div className='w-full h-full p-1 shadow-md bg-white rounded-full flex items-center justify-center'>
                         {selectedAvatar && selectedAvatar.trim().length > 0 ?
                             <img className='w-full h-full object-cover overflow-hidden rounded-full shadow-md' src={selectedAvatar} alt={selectedAvatar} />
-                            : <UserRound className='w-58 h-58 bg-white rounded-full text-primary' strokeWidth={1} />
+                            : <UserRound className='w-full h-full bg-white rounded-full text-primary' strokeWidth={1} />
                         }
                     </div>
-                    <div onClick={() => setShowAvatarPopup(true)} className='w-fit rounded-full cursor-pointer group p-2 bg-white text-primary absolute bottom-5 right-5 shadow-md'>
+                    <div onClick={() => setShowAvatarPopup(true)} className='w-fit rounded-full cursor-pointer group p-2 bg-white text-primary absolute bottom-0 right-0 md:bottom-5 md:right-5 shadow-md'>
                         <ImagePlus className='group-hover:scale-110' strokeWidth={1.5} />
                     </div>
                 </div>
 
             </div>
             {/* Group Form */}
-            <div className='w-4/5 mx-auto px-20 py-10  h-full'>
+            <div className='w-full max-w-3xl mx-auto px-4 sm:px-6 md:px-10 py-6 md:py-10 mb-14 md:mb-0'>
                 <form onSubmit={handleSubmit(onSubmit)} className='grid grid-cols-2 gap-5'>
                     {inputFields.map(item => <TextInput type={item?.type} key={item?.name} name={item?.name} label={item?.label} register={register} error={errors[item?.name]} status={item?.name === 'username' && usernameStatus} value={item?.name === 'username' && username} frontIcon={''} inputClass={''} labelClass={''} parentClass={`${item?.style}`} rearIcon={item?.rearIcon} isReadOnly={item?.isReadOnly} />
                     )}
-                    {radioFields.map(item => <RadioInput key={item?.name} label={item?.label} name={item?.name} error={errors[item?.name]} register={register} />)}
-                    <div className='col-span-2 w-full grid grid-cols-2 items-center gap-x-5 gap-y-3'>
+                    {radioFields.map(item => 
+                        <div key={item?.name} className='w-full col-span-2 md:col-span-1'>
+                            <RadioInput label={item?.label} name={item?.name} error={errors[item?.name]} register={register} />
+                        </div>
+                    )}
+                    <div className='col-span-2 w-full grid grid-col-1 md:grid-cols-2  items-center md:gap-x-5 md:gap-y-3 gap-y-2'>
                         <Button children={'Manage Friends'} className={'w-full cursor-pointer transition-all hover:bg-primary/20 hover:scale-[1.01]  mx-auto px-10 py-3 border-2  border-primary rounded-md  disabled:cursor-not-allowed text-primary disabled:border-zinc-300 disabled:bg-zinc-50 disabled:text-zinc-300'} disabled={true} />
                         <Button children={'Change Password'} handleClick={() => navigate('/chat/change-password')} className={'w-full cursor-pointer transition-all hover:bg-primary/20 hover:scale-[1.01]  mx-auto px-10 py-3 border-2 border-primary rounded-md disabled:bg-zinc-400 disabled:cursor-not-allowed text-primary'} disabled={false} />
 

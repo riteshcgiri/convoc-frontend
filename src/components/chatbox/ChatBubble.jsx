@@ -13,7 +13,6 @@ import MessageContent from "./MessageContent";
 
 
 const ChatBubble = ({ user, message, chatUsers, creator }) => {
-  const [showPopup, setShowPopup] = useState(false);
   const [popupPos, setPopupPos] = useState({ x: 0, y: 0 });
   const [showDeletePopup, setShowDeletePopup] = useState(false)
   const [showInfoPanel, setShowInfoPanel] = useState(false)
@@ -24,12 +23,12 @@ const ChatBubble = ({ user, message, chatUsers, creator }) => {
   const popupRef = useRef(null);
   const cardRef = useRef(null);
   const pressTimerRef = useRef(null);
-  const { setReplyTo, editMessage, deleteMessageForMe, deleteMessageForEveryone, getMessageInfo, selectMode, selectedMessages, toggleMessageSelection, enterSelectMode, exitSelectMode } = useChatStore()
+  const { setReplyTo, editMessage, deleteMessageForMe, deleteMessageForEveryone, getMessageInfo, selectMode, selectedMessages, toggleMessageSelection, enterSelectMode, exitSelectMode, activePopupMessageId, setActivePopup, clearActivePopup } = useChatStore()
   const { addNotification } = useNotificationStore()
 
+  const showPopup = activePopupMessageId === message._id
 
-
-  useClickOutside(popupRef, () => setShowPopup(false));
+  useClickOutside(popupRef, () => clearActivePopup());
 
   const isOwnMessage = (message?.sender?._id || message?.sender) === user?._id;
   const isDeleted = message?.isDeletedForEveryone;
@@ -39,16 +38,28 @@ const ChatBubble = ({ user, message, chatUsers, creator }) => {
 
   const handlePopup = (e) => {
     e.preventDefault();
-    setShowPopup(!showPopup);
-    const rect = cardRef.current.getBoundingClientRect();
-    setPopupPos({ x: rect.right + 10, y: rect.top, });
-    if (message?.sender?._id === user?._id) {
-      setPopupPos({ x: rect.left - (rect.width + 80), y: rect.top })
-    }
-    else {
-      setPopupPos({ x: rect.right + 7, y: rect.top })
+    setActivePopup(message._id)
+    const rect = cardRef.current.getBoundingClientRect()
+    const popupWidth = 180
+    const popupHeight = 220
 
+    let x = isOwnMessage ? rect.left - popupWidth : rect.right + 10
+    let y = rect.top
+
+    if (x + popupWidth > window.innerWidth) {
+      x = window.innerWidth - popupWidth - 10
     }
+
+    if (x < 10) x = 10
+
+    if (y + popupHeight > window.innerHeight) {
+      y = window.innerHeight - popupHeight - 10
+    }
+
+    if (y < 10) y = 10
+
+    setPopupPos({ x, y })
+
   }
 
   const handlePointerDown = (e) => {
@@ -63,10 +74,10 @@ const ChatBubble = ({ user, message, chatUsers, creator }) => {
   }
 
   useEffect(() => {
-    if(selectMode && selectedMessages.length <= 0 ){
+    if (selectMode && selectedMessages.length <= 0) {
       exitSelectMode()
     }
-  },[selectedMessages])
+  }, [selectedMessages])
 
 
 
@@ -78,7 +89,7 @@ const ChatBubble = ({ user, message, chatUsers, creator }) => {
         const info = await getMessageInfo(message._id);
         setMessageInfo(info);
         setShowInfoPanel(true);
-        setShowPopup(false);
+        clearActivePopup();
       }
     }] : []),
 
@@ -88,7 +99,7 @@ const ChatBubble = ({ user, message, chatUsers, creator }) => {
       fnc: () => {
         navigator.clipboard.writeText(message?.content || "");
         addNotification("success", "Copied!");
-        setShowPopup(false);
+        clearActivePopup();
       }
     }] : []),
     ...(!isDeleted ? [{
@@ -96,7 +107,7 @@ const ChatBubble = ({ user, message, chatUsers, creator }) => {
       icon: <Reply className="w-5 h-5" />,
       fnc: () => {
         setReplyTo(message);
-        setShowPopup(false);
+        clearActivePopup();
       }
     }] : []),
 
@@ -105,7 +116,7 @@ const ChatBubble = ({ user, message, chatUsers, creator }) => {
       icon: <Pencil className="w-5 h-5" />,
       fnc: () => {
         useChatStore.getState().setEditMessage(message);
-        setShowPopup(false);
+        clearActivePopup();
       }
     }] : []),
     ...(!isDeleted ? [{
@@ -120,7 +131,7 @@ const ChatBubble = ({ user, message, chatUsers, creator }) => {
       style: "text-red-500 hover:bg-red-50",
       fnc: () => {
         setShowDeletePopup(true);
-        setShowPopup(false);
+        clearActivePopup();
       }
     }] : []),
   ];
@@ -142,8 +153,8 @@ const ChatBubble = ({ user, message, chatUsers, creator }) => {
 
   if (message?.type === "system") {
     return (
-      <div className="w-full flex justify-center my-2">
-        <span className="text-xs text-zinc-400 bg-zinc-200 px-4 py-1 rounded-full">
+      <div className="w-full flex justify-center my-1 select-none">
+        <span className=" w-full text-xs text-center text-zinc-500/60 bg-linear-to-r from-transparent via-zinc-300  to-transparent px-4 py-1.5 rounded-full">
           {message?.content} {message.systemAction === 'group_created' && <>by {creator && (<b className="text-primary">{creator}</b>)}</>}
         </span>
       </div>
@@ -151,16 +162,15 @@ const ChatBubble = ({ user, message, chatUsers, creator }) => {
   }
 
   return (
-    <div className={`w-full flex items-center relative group/bubble ${isSelected ? 'bg-blue-300/20 rounded-md' : ''}`} onPointerDown={handlePointerDown} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp} onClick={handleClick} onDoubleClick={(e) => handlePointerDown(e)}>
+    <div className={`w-full flex items-center relative group/bubble px-1 sm:px-2 ${isSelected ? 'bg-blue-300/20 rounded-md' : ''}`} onPointerDown={handlePointerDown} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp} onClick={handleClick} onDoubleClick={(e) => handlePointerDown(e)}>
       {
         selectMode && (
-          <div className="shrink-0 flex items-center px-1">
+          <div className="shrink-0 flex items-center px-1 sm:px-2">
             <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all
             ${isSelected
                 ? "bg-blue-500 border-blue-500"
                 : "border-gray-400 bg-transparent"
-              }`}
-            >
+              }`}>
               {isSelected && (
                 <Check className="w-3 h-3 text-white" strokeWidth={4} />
               )}
@@ -168,11 +178,11 @@ const ChatBubble = ({ user, message, chatUsers, creator }) => {
           </div>
         )
       }
-      <div className={`w-full flex flex-col ${isOwnMessage ? "items-end" : "items-start"} ${selectMode && 'pointer-events-none'}`}>
+      <div className={`w-full flex flex-col min-w-0 select-none ${isOwnMessage ? "items-end" : "items-start"} ${selectMode && 'pointer-events-none'}`}>
 
-        <div ref={cardRef} className={`${bubbleColor} text-white w-fit max-w-[60%] relative rounded-lg `} onContextMenu={(e) => handlePopup(e)}>
+        <div ref={cardRef} className={`${bubbleColor} text-white w-fit max-w-[80%] sm:max-w-[70%] md:max-w-[60%] relative rounded-lg `} onContextMenu={(e) => handlePopup(e)}>
           {message?.replyTo && !message?.isDeletedForEveryone && (
-            <div className=" bg-white w-full rounded-t-lg px-3 py-2 border-l-4 border-blue-500 text-primary">
+            <div className=" bg-white w-full rounded-t-lg px-2 sm:px-3 py-1.5 sm:py-2 border-l-4 border-blue-500 text-primary">
               <div className={`flex items-center gap-1 justify-end`}>
                 <p className="text-[10px] font-semibold opacity-80">{message.replyTo.sender?._id === user?._id ? 'You' : message.replyTo.sender?.name}</p>
                 <Reply className="w-4 h-4" strokeWidth={1.3} />
@@ -180,18 +190,18 @@ const ChatBubble = ({ user, message, chatUsers, creator }) => {
               <p className="text-xs opacity-70 text-zinc-400 truncate">{message.replyTo.content}</p>
             </div>
           )}
-          <h1 className={`${message?.sender?._id === user?._id ? 'pe-3' : 'ps-3'} ${bubbleColor} py-0.5 rounded-lg text-[10px]`}>
+          <h1 className={`${message?.sender?._id === user?._id ? 'pe-3' : 'ps-3'} ${bubbleColor} py-1 rounded-lg text-[10px]`}>
             {message?.sender?._id === user?._id ? 'You' : message?.sender?.name}
           </h1>
           <div className="px-5 relative">
             {message?.isFile
               ? <FileBubble message={message} isOwn={message?.sender?._id === user?._id} />
               :
-              <h2> {message?.isDeletedForEveryone ? <span className="opacity-50 italic">This message was deleted</span> : <MessageContent content={message?.content} />}</h2>
+              <h2> {message?.isDeletedForEveryone ? <span className="opacity-50 italic wrap-break-words">This message was deleted</span> : <MessageContent content={message?.content} />}</h2>
             }
 
             <div className="mt-1 flex justify-end gap-1 text-zinc-300">
-              {message?.isEdited && !message?.isFile && (<span className="text-[9px] opacity-70 ml-2">(edited)</span>)}
+              {message?.isEdited && !message?.isFile && (<span className="text-[9px] opacity-70 ml-2">(Edited)</span>)}
               {message?.sender?._id === user?._id && chatUsers.length <= 2 && (
                 isRead ? <CheckCheck className="h-4 w-4 text-blue-500" /> : isDelivered ? <CheckCheck className="h-4 w-4 " /> : <Check className="h-4 w-4 " />
               )}
@@ -200,7 +210,7 @@ const ChatBubble = ({ user, message, chatUsers, creator }) => {
           </div>
         </div>
         {message?.sender?._id === user?._id && chatUsers.length > 2 && (
-          <div className="opacity-0 group-hover/bubble:opacity-100 transition-opacity duration-200 flex justify-end mt-1">
+          <div className="opacity-100 sm:opacity-0 sm:group-hover/bubble:opacity-100 transition-opacity duration-200 flex justify-end mt-1">
             <ReadByAvatars
               readBy={message?.readBy}
               currentUserId={user?._id}
@@ -210,7 +220,7 @@ const ChatBubble = ({ user, message, chatUsers, creator }) => {
         )}
       </div>
       {showPopup && (
-        <div ref={popupRef} style={{ position: "fixed", top: popupPos.y, left: popupPos.x, zIndex: 9999, }}>
+        <div ref={popupRef} style={{ position: "fixed", top: popupPos.y, left: popupPos.x, zIndex: 9999, maxWidth: "90vw" }}>
           <ChatMenuPopup
             className={`${message?.sender?._id === user?._id ? "right-60" : ""}`}
             options={bubbleOptions}

@@ -19,6 +19,7 @@ import useSocket from './hooks/useSocket'
 import useSocketEvents from './hooks/useSocketEvents'
 import JoinGroup from './pages/chat/JoinGroup'
 import ReactivateAccount from './components/user/ReactivateAccount'
+import NotFound from './pages/NotFound'
 
 
 const App = () => {
@@ -56,7 +57,7 @@ const App = () => {
   return (
 
     <div className='relative'>
-      <div className={`w-full h-dvh bg-white ${!isAuth && ' px-20 py-5'} font-sansation`}>
+      <div className={`w-full h-dvh bg-white ${!isAuth && 'px-y py-4 sm:px-8 sm:py-5  mpx-20 '} font-sansation`}>
         {!isAuth && <Navbar />}
         <Routes >
           <Route path='/' element={<PublicGuard><Landing /></PublicGuard>} />
@@ -71,7 +72,10 @@ const App = () => {
 
 
           <Route path='/chat/*' element={<Chat />} />
+          <Route path='*' element={<NotFound />} />
+
         </Routes>
+        {!isAuth && <div className='text-xs text-gray-400 text-center'>Made by Ritesh Giri with ❤️</div>}
       </div>
 
       <NotificationManager />
