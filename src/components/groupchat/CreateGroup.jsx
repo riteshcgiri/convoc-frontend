@@ -154,7 +154,7 @@ const CreateGroup = () => {
                     <div className='w-full h-full p-1 shadow-md bg-white rounded-full flex items-center justify-center'>
                         {selectedAvatar.trim() ?
                             <img className='w-full h-full object-cover overflow-hidden rounded-full shadow-md' src={selectedAvatar} alt={selectedAvatar} />
-                            : <UserRound className='w-full h-full bg-white rounded-full text-primary' strokeWidth={1} />
+                            : <UserRound className='w-[70%] h-[70%] bg-white rounded-full text-primary' strokeWidth={1} />
                         }
                     </div>
                     <div onClick={() => setShowAvatarPopup(true)} className='w-fit rounded-full cursor-pointer group p-2 bg-white text-primary absolute bottom-0 right-0 md:bottom-5 md:right-5 shadow-md'>

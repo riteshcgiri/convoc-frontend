@@ -102,7 +102,7 @@ const MemberSection = ({ selectedUsers, setSelectedUsers, error, parentClass='' 
                     </AnimatePresence>
                 </div>
             </div>
-            {error && (<p className="text-red-500 text-sm mt-1"> {error.message} </p>)}
+            {searchQuery && selectedUsers.length > 0 && selectedUsers.length < 2 && error && (<p className="text-red-500 text-sm mt-1"> {error.message} </p>)}
 
             {/* Results Panel */}
             <AnimatePresence>

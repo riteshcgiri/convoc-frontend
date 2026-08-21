@@ -1,12 +1,16 @@
 import { useEffect } from "react";
-import { onSocketReady, getSocket } from "../services/socket";
 import { attachCallSocketListners } from "./useCallSocket";
+
+import api from "../services/api";
 
 import useChatStore from "../store/chat.store";
 import useAuthStore from "../store/auth.store";
 import useCallStore from "../store/call.store"
-import api from "../services/api";
+import useAppNotificationStore from '../store/app.notification.store'
+
 import useNotificationSound from "./useNotificationSound";
+
+import { onSocketReady, getSocket } from "../services/socket";
 import { registerPushNotifications } from '../services/pushNotification'
 
 
@@ -41,6 +45,7 @@ const useSocketEvents = () => {
       socket.off("group_updated");
       socket.off("message_edited");
       socket.off("message_deleted");
+      socket.off("new_notification");
 
       socket.on("typing", (chatId) => {
         useChatStore.getState().setTyping(chatId, true);
@@ -149,6 +154,11 @@ const useSocketEvents = () => {
         // dispatch custom event so any component can listen
         window.dispatchEvent(new CustomEvent("incoming_file_offer", { detail: { ...data, autoAccept: true } }));
       });
+
+      socket.on("new_notification", (notification) => {
+        console.log("new notification received :", notification)
+        useAppNotificationStore().getState().addNotification(notification)
+      })
 
       // importing calling sockets
       attachCallSocketListners(socket);

@@ -52,7 +52,7 @@ const Menu = ({ isMobileBar = false }) => {
                     title: 'Notifications',
                     icon: <BellDot className='group-hover:scale-[1.09] transition-all w-5 h-5' />,
                     fnc: () => {},
-                    to: '/notifications',
+                    to: '/chat/notifications',
                 },
                 {
                     title: 'Media',

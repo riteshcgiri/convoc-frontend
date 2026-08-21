@@ -290,7 +290,7 @@ const MessageInput = () => {
             <Button children={<Plus className="w-6 h-6 scale-90" />} handleClick={() => setShowPopup(!showPopup)} className="p-2  rounded-full text-primary cursor-pointer focus:bg-primary/20 hover:bg-primary/20 hover:outline-primary focus:outline-primary" />
             <Button children={<Smile className="w-6 h-6" />} handleClick={handleEmojiBtn} className=" p-2 rounded-full text-primary cursor-pointer focus:bg-primary/20 hover:bg-primary/20 hover:outline-primary focus:outline-primary" />
           </div>
-          <input type="text" {...register("message")} ref={(e) => { register("message").ref(e); inputRef.current = e; }} id="message" placeholder="Tpye Message..." className="text-sm ps-22 pe-5 text-primary placeholder:text-primary placeholder:text-xs placeholder:tracking-wide py-2.5 rounded-full border-none outline-1 hover:outline-2 focus:outline-2  outline-primary  w-full" autoComplete="off" autoCorrect="off" autoComplete="new-password" autoComplete="one-time-code" autoCapitalize="off" spellCheck={false} />
+          <input type="text" {...register("message")} ref={(e) => { register("message").ref(e); inputRef.current = e; }} id="message" placeholder="Tpye Message..." className="text-sm ps-22 pe-5 text-primary placeholder:text-primary placeholder:text-xs placeholder:tracking-wide py-2.5 rounded-full border-none outline-1 hover:outline-2 focus:outline-2  outline-primary  w-full"  autoCorrect="off"  autoComplete="one-time-code" autoCapitalize="off" spellCheck={false} />
         </div>
 
         <Button children={isInputEmpty ? <Mic className="w-5 h-5" /> : <MousePointer2 className="w-5 h-5 rotate-90" />} className="p-3  rounded-full text-white cursor-pointer bg-primary  hover:outline-primary " type={'submit'} />

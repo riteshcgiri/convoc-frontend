@@ -13,6 +13,8 @@ import IncomingCallPopup from '../../components/calling/IncomingCallPopup'
 import CallScreen from '../../components/calling/CallScreen'
 import CallLogs from '../../components/calling/CallLogs'
 import Media from '../../pages/media/Media'
+import Notifications from "../notifications/Notifications";
+import Settings from "../setting/Settings";
 
 const Chat = () => {
   const { selectedChat } = useChatStore()
@@ -47,6 +49,8 @@ const Chat = () => {
           <Route path="/call-logs" element={<CallLogs />} />
           <Route path="/call-logs" element={<CallLogs />} />
           <Route path="/media" element={<Media />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path='/*' element={<NotFound />} />
         </Routes>
         

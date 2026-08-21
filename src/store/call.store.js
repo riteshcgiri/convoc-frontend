@@ -15,6 +15,9 @@ const useCallStore = create((set, get) => ({
   remoteStreams: {},
   peerConnections: {},
 
+  localVideoRef : null,
+  remoteVideoRef : null,
+
   // ACTIONS
   setIncomingCall: (call) => set({ incomingCall: call }),
   clearIncomingCall: () => set({ incomingCall: null }),
@@ -22,7 +25,7 @@ const useCallStore = create((set, get) => ({
   setActiveCall: (call) => set({ activeCall: call }),
   setCallStatus: (status) => {
     if (status === 'connected' || status === 'connecting') {
-    stopAllSounds()    // ← kill all sounds when call connects
+    stopAllSounds()    
   }
     set({ callStatus: status })
   },
@@ -58,6 +61,15 @@ const useCallStore = create((set, get) => ({
     })
     set({ isMuted: !isMuted })
   },
+
+  toggleCamera : () => {
+    const {localStream, isCameraOn} = get();
+    if(!localStream) return;
+    localStream.getVideoTracks().forEach(track => {track.enabled = !isCameraOn})
+    set({isCameraOn : !isCameraOn})
+  },
+
+  setCameraOn: (val) => set({ isCameraOn: val }),
 
   endCall: () => {
     const { localStream, peerConnections } = get()

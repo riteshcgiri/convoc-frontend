@@ -20,6 +20,7 @@ import useSocketEvents from './hooks/useSocketEvents'
 import JoinGroup from './pages/chat/JoinGroup'
 import ReactivateAccount from './components/user/ReactivateAccount'
 import NotFound from './pages/NotFound'
+import Settings from './pages/setting/Settings'
 
 
 const App = () => {
@@ -68,10 +69,13 @@ const App = () => {
           <Route path='/reset-password' element={<ResetGuard><ResetPassword /></ResetGuard>} />
           <Route path="/join/:inviteLink" element={<JoinGroup />} />
           <Route path="/reactivate/:token" element={<ReactivateAccount />} />
+
           
 
 
           <Route path='/chat/*' element={<Chat />} />
+          <Route path='/settings' element={<Settings />} />
+
           <Route path='*' element={<NotFound />} />
 
         </Routes>

@@ -34,7 +34,7 @@ const Switch = ({ name, control, label, defaultValue = false, parentClass = "",}
                     animate={{ x: value ? 28 : 0,}} />
             </motion.div>
 
-            {label && <span className="text-primary">{label}</span>}
+            {label && <span className="text-primary text-xs md:text-sm">{label}</span>}
         </div>
     );
 };

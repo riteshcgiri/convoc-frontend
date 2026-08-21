@@ -7,6 +7,7 @@ import { stopAllSounds, playRingback } from './useCallSocket';
 const TURN_ID = import.meta.env.VITE_TURN_USERNAME;
 const TURN_PAS = import.meta.env.VITE_TURN_PASSWORD;
 
+
 // console.log(TURN_ID, TURN_PAS);
 
 const iceCandidateQueue = {}
@@ -39,6 +40,8 @@ const ICE_SERVERS = {
         },
     ],
 }
+
+
 
 const createPeerConnection = (targetUserId) => {
     // console.log("ICE_SERVERS:", JSON.stringify(ICE_SERVERS))
@@ -99,7 +102,12 @@ export const startCall = async ({ targetUserId, chatId, type, callerName, caller
             video: type === "video",
         })
 
+
         useCallStore.getState().setLocalStream(localStream)
+        if (type === 'video') {
+            useCallStore.getState().setCameraOn(true)
+        }
+
         useCallStore.getState().setActiveCall({
             chatId, type, isGroup: false,
             remoteUser: { _id: targetUserId, name: targetUserName, avatar: targetUserAvatar },
@@ -155,6 +163,11 @@ export const acceptCall = async () => {
         })
 
         useCallStore.getState().setLocalStream(localStream)
+
+        if (type === 'video') {
+            useCallStore.getState().setCameraOn(true)
+        }
+        
         useCallStore.getState().setActiveCall({
             chatId, type, isGroup: false,
             localUser: { name: currentUser.name, avatar: currentUser.avatar },
@@ -203,47 +216,47 @@ export const handleCallAnswer = async ({ answer, userId }) => {
 }
 
 export const handleIceCandidate = async ({ candidate, userId }) => {
-  const { peerConnections } = useCallStore.getState()
-  const pc = peerConnections[userId]
+    const { peerConnections } = useCallStore.getState()
+    const pc = peerConnections[userId]
 
-  if (!pc) {
-    // queue it for later
-    if (!iceCandidateQueue[userId]) iceCandidateQueue[userId] = []
-    iceCandidateQueue[userId].push(candidate)
-    // console.log("queued ICE candidate for:", userId)
-    return
-  }
+    if (!pc) {
+        // queue it for later
+        if (!iceCandidateQueue[userId]) iceCandidateQueue[userId] = []
+        iceCandidateQueue[userId].push(candidate)
+        // console.log("queued ICE candidate for:", userId)
+        return
+    }
 
-  if (!pc.remoteDescription) {
-    // remote description not set yet — queue
-    if (!iceCandidateQueue[userId]) iceCandidateQueue[userId] = []
-    iceCandidateQueue[userId].push(candidate)
-    // console.log("queued ICE candidate — no remote desc yet")
-    return
-  }
+    if (!pc.remoteDescription) {
+        // remote description not set yet — queue
+        if (!iceCandidateQueue[userId]) iceCandidateQueue[userId] = []
+        iceCandidateQueue[userId].push(candidate)
+        // console.log("queued ICE candidate — no remote desc yet")
+        return
+    }
 
-  try {
-    await pc.addIceCandidate(new RTCIceCandidate(candidate))
-    // console.log("✅ added ICE candidate")
-  } catch (err) {
-    console.error("handleIceCandidate error:", err)
-  }
+    try {
+        await pc.addIceCandidate(new RTCIceCandidate(candidate))
+        // console.log("✅ added ICE candidate")
+    } catch (err) {
+        console.error("handleIceCandidate error:", err)
+    }
 }
 export const flushIceCandidates = async (userId) => {
-  const { peerConnections } = useCallStore.getState()
-  const pc = peerConnections[userId]
-  if (!pc || !iceCandidateQueue[userId]) return
+    const { peerConnections } = useCallStore.getState()
+    const pc = peerConnections[userId]
+    if (!pc || !iceCandidateQueue[userId]) return
 
-//   console.log("flushing", iceCandidateQueue[userId].length, "queued candidates")
+    //   console.log("flushing", iceCandidateQueue[userId].length, "queued candidates")
 
-  for (const candidate of iceCandidateQueue[userId]) {
-    try {
-      await pc.addIceCandidate(new RTCIceCandidate(candidate))
-    } catch (err) {
-      console.error("flush candidate error:", err)
+    for (const candidate of iceCandidateQueue[userId]) {
+        try {
+            await pc.addIceCandidate(new RTCIceCandidate(candidate))
+        } catch (err) {
+            console.error("flush candidate error:", err)
+        }
     }
-  }
-  delete iceCandidateQueue[userId]
+    delete iceCandidateQueue[userId]
 }
 
 export const rejectCall = () => {
