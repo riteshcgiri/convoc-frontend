@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Menu from "../../components/menu/Menu";
 import Sidebar from "../../components/Sidebar";
 import ChatContainer from "../../components/chatbox/ChatContainer";
@@ -22,11 +23,26 @@ const Chat = () => {
 
   const isOnSubRoute = location.pathname !== '/chat' && location.pathname !== '/chat/'
   const showContent = selectedChat || isOnSubRoute
+  const inChatView = selectedChat && isOnSubRoute;
 
-  
+   useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => {
+      document.documentElement.style.setProperty("--app-height", `${vv.height}px`);
+      window.scrollTo(0, 0); // stops iOS from scrolling the page behind the keyboard
+    };
+    update();
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+    };
+  }, []);
 
   return (
-    <div className="w-full flex bg-gray-100 overflow-hidden relative"  style={{ height: '100dvh' }}>
+    <div className="fixed inset-x-0 top-0 flex bg-gray-100 overflow-hidden" style={{ height: "var(--app-height, 100dvh)" }}>
 
       {/* Desktop: left icon menu — hidden on mobile */}
       <div className="hidden md:flex shrink-0">
@@ -57,9 +73,11 @@ const Chat = () => {
       </div>
 
       {/* Mobile bottom tab bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50">
-        <Menu isMobileBar />
-      </div>
+      {!inChatView && (
+        <div className="md:hidden fixed bottom-0 inset-x-0 z-50">
+          <Menu isMobileBar />
+        </div>
+      )}
 
       <FileTransferManager />
       

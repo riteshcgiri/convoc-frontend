@@ -18,10 +18,9 @@ const UserCard = ({ username, name, lastMsg, lastMsgTime, src, isActive, isMuted
   const typingChats = useChatStore((state) => state.typingChats)
   const isTyping = typingChats[chatId]
   const {setShowChatProfile,showChatProfile, selectedChat, toggleFavourite, deleteChatForUser} = useChatStore();
-  const currentUser = selectedChat?.users?.find(u => u?._id === user?._id);
-  const currentUserSetting = selectedChat?.userSettings?.find(u => u?.user === currentUser?._id)
-  const isFav = currentUserSetting?.favourite;
-  // console.log(isFav);
+  const chat = useChatStore((state) => state.chats.find((c) => c._id === chatId))
+  const currentUserSetting = chat?.userSettings?.find((setting) => (setting.user?._id ?? setting.user)?.toString() === user?._id?.toString())
+  const isFav = Boolean(currentUserSetting?.favourite);
   
   const menuOptions = [
     {
@@ -37,9 +36,10 @@ const UserCard = ({ username, name, lastMsg, lastMsgTime, src, isActive, isMuted
       to: `/mark-as-read?user=`
     },
     {
-      title: isFav ? 'Remove as favourites' : 'Add to favourites',
+      title: isFav ? 'Remove Favourite' : 'Add to favourites',
       icon: <Heart className={`w-5 h-5 ${isFav ? 'fill-red-500 text-red-500' : ''}`} />,
-      fnc: async() =>  await toggleFavourite(selectedChat?._id),
+      fnc: async () => await toggleFavourite( chatId )
+    ,
       to: `/add-to-fav?user=`
     },
     {
@@ -57,18 +57,29 @@ const UserCard = ({ username, name, lastMsg, lastMsgTime, src, isActive, isMuted
 
 
   ]
+
+ 
   const handleShowPopup = (e) => {
     e.preventDefault();
     const rect = cardRef.current.getBoundingClientRect();
-    setPopupPos({ x: rect.right + 10, y: rect.top, });
-    setShowPopup((prev) => !prev)
+
+    if(window.innerWidth < 640 || window.innerWidth < 1024){
+      setPopupPos({ x: 240, y: rect.top + 82, });
+
+    }else{
+      setPopupPos({ x: rect.right + 10, y: rect.top, });
+
+    }
+    // setShowPopup((prev) => !prev)
+    setShowPopup(true)
 
   };
   useClickOutside(popupRef, () => setShowPopup(false))
 
 
+
   return (
-    <div className="relative" onContextMenu={handleShowPopup}  >
+    <div className="relative" onContextMenu={handleShowPopup} onPointerDown={handleShowPopup}  >
       <div ref={cardRef} className="w-full flex px-5 py-3 gap-3 items-center border border-zinc-100 hover:bg-primary/10 group select-none relative" onClick={onClick}>
         <div className={`w-14 h-14 rounded-full ${isActive && 'outline-2 outline-green-500'} relative`}>
           {!!src ?
@@ -96,7 +107,7 @@ const UserCard = ({ username, name, lastMsg, lastMsgTime, src, isActive, isMuted
         {showPopup && (
           <Portal children={
             <div ref={popupRef} style={{ position: "fixed", top: popupPos.y, left: popupPos.x, zIndex: 9999, }} >
-              <ChatMenuPopup options={menuOptions} className={'left-full top-0 z-100'} />
+              <ChatMenuPopup options={menuOptions} className={' z-100'} />
             </div>} />
 
         )}

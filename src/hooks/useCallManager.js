@@ -2,22 +2,50 @@ import { getSocket } from '../services/socket'
 import useCallStore from '../store/call.store'
 import useAuthStore from '../store/auth.store';
 import { stopAllSounds, playRingback } from './useCallSocket';
+import useNotificationStore from '../store/notification.store';
 
 
 const TURN_ID = import.meta.env.VITE_TURN_USERNAME;
 const TURN_PAS = import.meta.env.VITE_TURN_PASSWORD;
 
-
 // console.log(TURN_ID, TURN_PAS);
 
 const iceCandidateQueue = {}
 
+// const ICE_SERVERS = {
+//     iceTransportPolicy: 'relay',
+//     iceServers: [
+//         {
+//             urls: "stun:stun.relay.metered.ca:80",
+//         },
+//         {
+//             urls: "turn:global.relay.metered.ca:80",
+//             username: TURN_ID,
+//             credential: TURN_PAS,
+//         },
+//         {
+//             urls: "turn:global.relay.metered.ca:80?transport=tcp",
+//             username: TURN_ID,
+//             credential: TURN_PAS,
+//         },
+//         {
+//             urls: "turn:global.relay.metered.ca:443",
+//             username: TURN_ID,
+//             credential: TURN_PAS,
+//         },
+//         {
+//             urls: "turns:global.relay.metered.ca:443?transport=tcp",
+//             username: TURN_ID,
+//             credential: TURN_PAS,
+//         },
+//     ],
+// }
+
 const ICE_SERVERS = {
-    iceTransportPolicy: 'relay',
+    iceTransportPolicy: 'all',
     iceServers: [
-        {
-            urls: "stun:stun.relay.metered.ca:80",
-        },
+        { urls: "stun:stun.l.google.com:19302" }, 
+        { urls: "stun:stun.relay.metered.ca:80", },
         {
             urls: "turn:global.relay.metered.ca:80",
             username: TURN_ID,
@@ -167,7 +195,7 @@ export const acceptCall = async () => {
         if (type === 'video') {
             useCallStore.getState().setCameraOn(true)
         }
-        
+
         useCallStore.getState().setActiveCall({
             chatId, type, isGroup: false,
             localUser: { name: currentUser.name, avatar: currentUser.avatar },
@@ -279,4 +307,70 @@ export const endCall = () => {
     })
     stopAllSounds()
     useCallStore.getState().endCall()
+}
+
+export const canShareScreen = () => typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getDisplayMedia
+
+const replaceVideoTrack = async (track) => {
+    const { peerConnections } = useCallStore.getState()
+    await Promise.all(
+        Object.values(peerConnections).map(async (pc) => {
+            const sender = pc.getSenders().find(s => s.track?.kind === 'video')
+            if (sender) await sender.replaceTrack(track)
+        })
+    )
+}
+
+export const startScreenSharing = async () => {
+    
+    const socket = getSocket()
+    const { peerConnections, isScreenSharing, activeCall } = useCallStore.getState()
+    if (!activeCall || activeCall.type !== 'video' || isScreenSharing || !canShareScreen()) return
+
+    try {
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({
+            video: {
+                frameRate: { ideal: 15, max: 30 },
+                width: { max: 1920 },
+                height: { max: 1080 },
+            },
+            audio: false,
+        })
+
+        const screenTrack = screenStream.getVideoTracks()[0]
+        screenTrack.contentHint = 'detail'
+
+        await replaceVideoTrack(screenTrack)
+        useCallStore.getState().setScreenStream(screenStream)
+
+        screenTrack.onended = () => stopScreenSharing()
+        Object.keys(peerConnections).forEach(userId => socket.emit("screen_share_started", { targetUserId: userId }))
+
+    } catch (error) {
+        if (error.name !== 'NotAllowedError') {
+            console.error("startScreenShare error:", error)
+            // useNotificationStore.getState().addNotification('error', error || 'Unable to Start Screen Sharing')
+        }
+    }
+}
+
+export const stopScreenSharing = async () => {
+    
+    const socket = getSocket()
+    const { screenStream, localStream, peerConnections } = useCallStore.getState()
+
+    if (!screenStream) return
+    screenStream.getTracks().forEach(t => t.stop())
+
+    const cameraTrack = localStream?.getVideoTracks()[0]
+    try {
+        if (cameraTrack) await replaceVideoTrack(cameraTrack)
+    } catch (error) {
+        console.error("stopScreenShare error:", error)
+        // useNotificationStore.getState().addNotification('error', error || 'Unable to Start Screen Sharing')
+    }
+
+    useCallStore.getState().setScreenStream(null)
+    Object.keys(peerConnections).forEach(userId => socket.emit("screen_share_stopped", { targetUserId: userId }))
+
 }

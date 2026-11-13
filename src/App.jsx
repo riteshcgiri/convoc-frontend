@@ -32,7 +32,6 @@ const App = () => {
   useSocket();
   useSocketEvents();
 
-console.log(user)
   useEffect(() => {
     checkAuth(navigate);
   }, []);

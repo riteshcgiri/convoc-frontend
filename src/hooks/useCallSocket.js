@@ -68,6 +68,11 @@ export const attachCallSocketListners = (socket) => {
     socket.off("call_answer");
     socket.off("call_ice_candidate");
     socket.off("call_ended");
+    socket.off("screen_share_started");
+    socket.off("screen_share_stopped");
+
+    socket.on("screen_share_started", () => useCallStore.getState().setRemoteScreenSharing(true))
+    socket.on("screen_share_stopped", () => useCallStore.getState().setRemoteScreenSharing(false))
 
     socket.on("incoming_call", (data) => {
         stopAllSounds()

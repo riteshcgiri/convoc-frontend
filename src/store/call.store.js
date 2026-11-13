@@ -10,13 +10,16 @@ const useCallStore = create((set, get) => ({
   isMuted: false,
   isCameraOn: false,
   isScreenSharing: false,
+  screenStream: null,
+  remoteScreenSharing: false,
 
   localStream: null,
   remoteStreams: {},
   peerConnections: {},
 
-  localVideoRef : null,
-  remoteVideoRef : null,
+  localVideoRef: null,
+  remoteVideoRef: null,
+
 
   // ACTIONS
   setIncomingCall: (call) => set({ incomingCall: call }),
@@ -25,8 +28,8 @@ const useCallStore = create((set, get) => ({
   setActiveCall: (call) => set({ activeCall: call }),
   setCallStatus: (status) => {
     if (status === 'connected' || status === 'connecting') {
-    stopAllSounds()    
-  }
+      stopAllSounds()
+    }
     set({ callStatus: status })
   },
 
@@ -41,6 +44,9 @@ const useCallStore = create((set, get) => ({
     delete streams[userId]
     return { remoteStreams: streams }
   }),
+
+  setScreenStream: (stream) => set({ screenStream: stream, isScreenSharing: !!stream }),
+  setRemoteScreenSharing: (val) => set({ remoteScreenSharing: val }),
 
   addPeerConnection: (userId, pc) => set((state) => ({
     peerConnections: { ...state.peerConnections, [userId]: pc }
@@ -62,18 +68,20 @@ const useCallStore = create((set, get) => ({
     set({ isMuted: !isMuted })
   },
 
-  toggleCamera : () => {
-    const {localStream, isCameraOn} = get();
-    if(!localStream) return;
-    localStream.getVideoTracks().forEach(track => {track.enabled = !isCameraOn})
-    set({isCameraOn : !isCameraOn})
+  toggleCamera: () => {
+    const { localStream, isCameraOn } = get();
+    if (!localStream) return;
+    localStream.getVideoTracks().forEach(track => { track.enabled = !isCameraOn })
+    set({ isCameraOn: !isCameraOn })
   },
 
   setCameraOn: (val) => set({ isCameraOn: val }),
 
+
   endCall: () => {
-    const { localStream, peerConnections } = get()
-    stopAllSounds()
+    const { localStream, peerConnections, screenStream } = get()
+    stopAllSounds();
+    screenStream?.getTracks().forEach(track => track.stop())
     localStream?.getTracks().forEach(track => track.stop())
     Object.values(peerConnections).forEach(pc => pc.close())
     set({
@@ -83,6 +91,8 @@ const useCallStore = create((set, get) => ({
       isMuted: false,
       isCameraOn: false,
       isScreenSharing: false,
+      remoteScreenSharing : false,
+      screenStream : null,
       localStream: null,
       remoteStreams: {},
       peerConnections: {},

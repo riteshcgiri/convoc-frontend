@@ -133,6 +133,7 @@ const MessageInput = () => {
     }
 
     reset();
+    inputRef.current?.focus()
     if (socket && selectedChat) {
       socket.emit("stop_typing", selectedChat._id);
       isTypingRef.current = false;

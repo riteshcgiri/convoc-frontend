@@ -6,7 +6,7 @@ const ChatMenuPopup = ({ options, className = "" }) => {
       {options.map((option) => (
         <motion.div  key={option.title} initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} whileHover={{ x: 5 }} whileTap={{ scale: 0.97 }} className={` cursor-pointer flex gap-2 text-xs p-3 rounded-lg items-center  transition-colors duration-200   ${option?.style ? option.style : "text-primary hover:bg-primary/15"}`} onClick={option?.fnc}>
           {option.icon}
-          <h2 className="flex-1">{option.title}</h2>
+          <h2 className="flex-1 text-nowrap">{option.title}</h2>
         </motion.div>
       ))}
     </motion.div>
