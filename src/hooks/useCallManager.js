@@ -44,7 +44,7 @@ const iceCandidateQueue = {}
 const ICE_SERVERS = {
     iceTransportPolicy: 'all',
     iceServers: [
-        { urls: "stun:stun.l.google.com:19302" }, 
+        { urls: "stun:stun.l.google.com:19302" },
         { urls: "stun:stun.relay.metered.ca:80", },
         {
             urls: "turn:global.relay.metered.ca:80",
@@ -100,15 +100,22 @@ const createPeerConnection = (targetUserId) => {
         }
     }
 
-    pc.ontrack = ({ streams }) => {
-        // console.log("Got remote track!", streams)
-        if (streams?.[0]) {
-            useCallStore.getState().addRemoteStream(targetUserId, streams[0]);
-            useCallStore.getState().setCallStatus('connected');
+
+    pc.ontrack = ({ track, streams }) => {
+        const stream = streams?.[0]
+        if (!stream) return
+
+        const callStream = useCallStore.getState().remoteStreams[targetUserId]
+        if (callStream && track.kind === 'audio' && stream.id !== callStream.id) {
+            useCallStore.getState().setRemoteScreenAudio(stream)
+            return
         }
+
+        useCallStore.getState().addRemoteStream(targetUserId, stream)
+        useCallStore.getState().setCallStatus('connected')
     }
 
-    useCallStore.getState().addPeerConnection(targetUserId, pc)
+    useCallStore.getState().addPeerConnection(targetUserId, pc) 
 
     return pc
 
@@ -168,7 +175,7 @@ export const startCall = async ({ targetUserId, chatId, type, callerName, caller
         })
 
     } catch (error) {
-        // console.error("startCall error:", error)
+        console.error("startCall error:", error)
         stopAllSounds()
         useCallStore.getState().endCall()
     }
@@ -209,24 +216,42 @@ export const acceptCall = async () => {
         const pc = createPeerConnection(callerId)
         addLocalTracks(pc, localStream)
 
+
+
         // ← remove any previous listener first
-        socket.off("call_offer")
-        socket.once("call_offer", async ({ offer }) => {
-            // ← check state before setting remote description
-            if (pc.signalingState !== 'stable') {
-                // console.log("unexpected signaling state:", pc.signalingState)
-                return
-            }
-            await pc.setRemoteDescription(new RTCSessionDescription(offer))
-            await flushIceCandidates(callerId)
-            const answer = await pc.createAnswer()
-            await pc.setLocalDescription(answer)
-            socket.emit("call_answer", { targetUserId: callerId, answer })
-        })
+        // socket.off("call_offer")
+        // socket.once("call_offer", async ({ offer }) => {
+        //     // ← check state before setting remote description
+        //     if (pc.signalingState !== 'stable') {
+        //         // console.log("unexpected signaling state:", pc.signalingState)
+        //         return
+        //     }
+        //     await pc.setRemoteDescription(new RTCSessionDescription(offer))
+        //     await flushIceCandidates(callerId)
+        //     const answer = await pc.createAnswer()
+        //     await pc.setLocalDescription(answer)
+        //     socket.emit("call_answer", { targetUserId: callerId, answer })
+        // })
 
     } catch (error) {
         // console.error("acceptCall error:", error)
         useCallStore.getState().endCall()
+    }
+}
+
+export const handleCallOffer = async ({ offer, callerId }) => {
+    const socket = getSocket()
+    const pc = useCallStore.getState().peerConnections[callerId]
+    if (!pc || pc.signalingState !== 'stable') return
+
+    try {
+        await pc.setRemoteDescription(new RTCSessionDescription(offer))
+        await flushIceCandidates(callerId)
+        const answer = await pc.createAnswer()
+        await pc.setLocalDescription(answer)
+        socket.emit("call_answer", { targetUserId: callerId, answer })
+    } catch (error) {
+        console.error("handleCallOffer error:", error)
     }
 }
 
@@ -321,8 +346,19 @@ const replaceVideoTrack = async (track) => {
     )
 }
 
+// Screen sharing functions
+
+const screenAudioSenders = {}
+
+const renegotiate = async (userId, pc) => {
+    if (pc.signalingState !== 'stable') return
+    const offer = await pc.createOffer()
+    await pc.setLocalDescription(offer)
+    getSocket().emit("call_offer", { targetUserId: userId, offer })
+}
+
 export const startScreenSharing = async () => {
-    
+
     const socket = getSocket()
     const { peerConnections, isScreenSharing, activeCall } = useCallStore.getState()
     if (!activeCall || activeCall.type !== 'video' || isScreenSharing || !canShareScreen()) return
@@ -334,13 +370,26 @@ export const startScreenSharing = async () => {
                 width: { max: 1920 },
                 height: { max: 1080 },
             },
-            audio: false,
+            audio: {
+                echoCancellation: false,
+                noiseSuppression: false,
+                autoGainControl: false
+            },
         })
 
         const screenTrack = screenStream.getVideoTracks()[0]
         screenTrack.contentHint = 'detail'
 
         await replaceVideoTrack(screenTrack)
+        Object.keys(screenAudioSenders).forEach(k => delete screenAudioSenders[k])
+
+        const audioTrack = screenStream.getAudioTracks()[0]
+        if (audioTrack) {
+            await Promise.all(Object.entries(peerConnections).map(async ([userId, pc]) => {
+                screenAudioSenders[userId] = pc.addTrack(audioTrack, screenStream)
+                await renegotiate(userId, pc)
+            }))
+        }
         useCallStore.getState().setScreenStream(screenStream)
 
         screenTrack.onended = () => stopScreenSharing()
@@ -355,7 +404,7 @@ export const startScreenSharing = async () => {
 }
 
 export const stopScreenSharing = async () => {
-    
+
     const socket = getSocket()
     const { screenStream, localStream, peerConnections } = useCallStore.getState()
 
@@ -369,6 +418,17 @@ export const stopScreenSharing = async () => {
         console.error("stopScreenShare error:", error)
         // useNotificationStore.getState().addNotification('error', error || 'Unable to Start Screen Sharing')
     }
+    await Promise.all(Object.entries(peerConnections).map(async ([userId, pc]) => {
+        const sender = screenAudioSenders[userId]
+        if (!sender) return
+        try {
+            pc.removeTrack(sender)
+            await renegotiate(userId, pc)
+        } catch (error) {
+            console.error("remove screen audio error:", error)
+        }
+        delete screenAudioSenders[userId]
+    }))
 
     useCallStore.getState().setScreenStream(null)
     Object.keys(peerConnections).forEach(userId => socket.emit("screen_share_stopped", { targetUserId: userId }))

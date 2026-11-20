@@ -12,6 +12,7 @@ const useCallStore = create((set, get) => ({
   isScreenSharing: false,
   screenStream: null,
   remoteScreenSharing: false,
+  remoteScreenAudio : null,
 
   localStream: null,
   remoteStreams: {},
@@ -47,6 +48,8 @@ const useCallStore = create((set, get) => ({
 
   setScreenStream: (stream) => set({ screenStream: stream, isScreenSharing: !!stream }),
   setRemoteScreenSharing: (val) => set({ remoteScreenSharing: val }),
+
+  setRemoteScreenAudio : (stream) => set({remoteScreenAudio : stream}),
 
   addPeerConnection: (userId, pc) => set((state) => ({
     peerConnections: { ...state.peerConnections, [userId]: pc }
@@ -92,6 +95,7 @@ const useCallStore = create((set, get) => ({
       isCameraOn: false,
       isScreenSharing: false,
       remoteScreenSharing : false,
+      remoteScreenAudio : null,
       screenStream : null,
       localStream: null,
       remoteStreams: {},

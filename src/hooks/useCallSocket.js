@@ -1,6 +1,7 @@
 import useCallStore from '../store/call.store'
 import { handleCallAnswer, handleIceCandidate } from './useCallManager'
 import useCallLogStore from '../store/callLogs.store'
+import { handleCallOffer } from './useCallManager'
 
 
 let ringtoneActive = false
@@ -70,9 +71,14 @@ export const attachCallSocketListners = (socket) => {
     socket.off("call_ended");
     socket.off("screen_share_started");
     socket.off("screen_share_stopped");
+    socket.off("call_offer");
+
 
     socket.on("screen_share_started", () => useCallStore.getState().setRemoteScreenSharing(true))
-    socket.on("screen_share_stopped", () => useCallStore.getState().setRemoteScreenSharing(false))
+    socket.on("screen_share_stopped", () => {
+        useCallStore.getState().setRemoteScreenSharing(false)
+        useCallStore.getState().setRemoteScreenAudio(null)
+    })
 
     socket.on("incoming_call", (data) => {
         stopAllSounds()
@@ -99,6 +105,9 @@ export const attachCallSocketListners = (socket) => {
         // console.log("📥 received ICE candidate from:", userId)
         handleIceCandidate({ candidate, userId })
     })
+
+
+    socket.on("call_offer", handleCallOffer)
 
     socket.on("call_ended", () => {
         stopAllSounds()

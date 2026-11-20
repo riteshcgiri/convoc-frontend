@@ -4,7 +4,7 @@ import { Mic, MicOff, Video, VideoOff, PhoneOff, ScreenShare, ScreenShareOff, Vo
 import { endCall, startScreenSharing, stopScreenSharing, canShareScreen } from '../../hooks/useCallManager'
 import StreamView from './StreamView'
 import ZoomableVideo from './ZoomableVideo'
-
+import useCallStore from '../../store/call.store'
 
 const CtrlBtn = ({ onClick, active, danger, label, children }) => (
     <motion.button
@@ -20,8 +20,12 @@ const VideoCallScreen = ({ activeCall, callStatus, isMuted, isCameraOn,
     localStream, remoteStream, toggleMute, toggleCamera, seconds,
     formatTime, isScreenSharing, remoteScreenSharing, }) => {
 
+    const remoteScreenAudio = useCallStore(s => s.remoteScreenAudio)
+
+    const [screenAudioOff, setScreenAudioOff] = useState(false)
     const [swapped, setSwapped] = useState(false);
-    const [sharedAudioOff, setSharedAudioOff] = useState(false);
+
+    const screenAudioRef = useRef(null)
     const safeAreaRef = useRef(null);
     const audioRef = useRef(null)
 
@@ -30,7 +34,11 @@ const VideoCallScreen = ({ activeCall, callStatus, isMuted, isCameraOn,
     }, [remoteStream])
 
     useEffect(() => {
-        if (!remoteScreenSharing) setSharedAudioOff(false)
+        if (screenAudioRef.current) screenAudioRef.current.srcObject = remoteScreenAudio || null
+    }, [remoteScreenAudio])
+
+    useEffect(() => {
+        if (!remoteScreenSharing) setScreenAudioOff(false)
     }, [remoteScreenSharing])
 
     const remote = { stream: remoteStream, camOn: true, avatar: activeCall.remoteUser?.avatar, name: activeCall.remoteUser?.name, status: callStatus }
@@ -44,7 +52,8 @@ const VideoCallScreen = ({ activeCall, callStatus, isMuted, isCameraOn,
 
     return (
         <div className="fixed inset-0 z-50 bg-black overflow-hidden select-none">
-            <audio ref={audioRef} autoPlay playsInline muted={sharedAudioOff} />
+            <audio ref={audioRef} autoPlay playsInline />
+            <audio ref={screenAudioRef} autoPlay playsInline muted={screenAudioOff} />
 
             {/* Layer 1 */}
             <div className='absolute inset-0'>
@@ -82,7 +91,7 @@ const VideoCallScreen = ({ activeCall, callStatus, isMuted, isCameraOn,
                         {isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
                     </CtrlBtn>
 
-                    <CtrlBtn onClick={toggleCamera} active={!isCameraOn} label={'Mute'}>
+                    <CtrlBtn onClick={toggleCamera} active={!isCameraOn} label={'Camera'}>
                         {isCameraOn ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
                     </CtrlBtn>
 
@@ -92,9 +101,9 @@ const VideoCallScreen = ({ activeCall, callStatus, isMuted, isCameraOn,
                         </CtrlBtn>
                     )}
 
-                    {remoteScreenSharing && (
-                        <CtrlBtn onClick={() => setSharedAudioOff(prev => !prev)} active={sharedAudioOff} label="Toggle incoming audio">
-                            {sharedAudioOff ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                    {remoteScreenAudio && (
+                        <CtrlBtn onClick={() => setScreenAudioOff(v => !v)} active={screenAudioOff} label="Toggle shared audio">
+                            {screenAudioOff ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                         </CtrlBtn>
                     )}
 
